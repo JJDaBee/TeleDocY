@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/consultationHistory'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost:3306/consultationHistory'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
@@ -49,6 +49,49 @@ def find_by_NRIC(NRIC):
         }
     ), 200
 
+@app.route("/consultationHistory", methods=["POST"])
+def create_consultationrecord():
+    data = request.get_json()
+    NRIC = data.get("NRIC")
+    dateTime = data.get("dateTime")
+    reasonforVisit = data.get("reasonforVisit")
+    doctorName = data.get("doctorName")
+    diagnosis = data.get("diagnosis")
+    prescriptions = data.get("prescriptions")
+
+    new_consultation = consultationHistory(
+        NRIC=NRIC,
+        dateTime=dateTime,
+        reasonforVisit=reasonforVisit,
+        doctorName=doctorName,
+        diagnosis=diagnosis,
+        prescriptions=prescriptions
+    )
+    try:
+        # Add the new consultation to the session and commit to the database
+        db.session.add(new_consultation)
+        db.session.commit()
+
+        return jsonify({
+            "code": 201,
+            "message": "Consultation record created successfully.",
+            "data": {
+                "NRIC": new_consultation.NRIC,
+                "dateTime": new_consultation.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
+                "reasonforVisit": new_consultation.reasonforVisit,
+                "doctorName": new_consultation.doctorName,
+                "diagnosis": new_consultation.diagnosis,
+                "prescriptions": new_consultation.prescriptions
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while creating the consultation record.",
+            "error": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
