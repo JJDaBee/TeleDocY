@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+    gateway:
+        container_name: teledocy-gateway-1
+        build: ./gateway
+        ports:
+            - '4000:4000'
+        networks:
+            - app-network
+
+    frontend:
+        container_name: teledocy-frontend-1
+        build: ./frontend
+        ports:
+            - '5173:5173'
+        depends_on:
+            - gateway
+        environment:
+            - VITE_API_URL=http://localhost:4000
+        networks:
+            - app-network
+
+networks:
+    app-network:
+        driver: bridge
