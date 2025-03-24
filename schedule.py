@@ -6,14 +6,14 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # PostgreSQL Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/doctor'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/schedule'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 # Doctor Table Model
-class Doctor(db.Model):
-    __tablename__ = "doctor"
+class Schedule(db.Model):
+    __tablename__ = "schedule"
 
     doctorname = db.Column(db.String(100), primary_key=True)
     availability = db.Column(db.Boolean, nullable=False)
@@ -24,7 +24,7 @@ def reset_availability_after_delay(doctor_name):
     time.sleep(1800)  # Wait for 30 minutes (1800 seconds)
     
     with app.app_context():  # Ensure the Flask app context is available
-        doctor = Doctor.query.filter_by(doctorname=doctor_name).first()
+        doctor = Schedule.query.filter_by(doctorname=doctor_name).first()
         if doctor:
             doctor.availability = True  # Mark as available
             db.session.commit()
@@ -34,7 +34,7 @@ def reset_availability_after_delay(doctor_name):
 @app.route("/availableDoctor", methods=['GET'])
 def get_first_available_doctor():
     with app.app_context():
-        available_doctor = Doctor.query.filter_by(availability=True).first()
+        available_doctor = Schedule.query.filter_by(availability=True).first()
 
         if available_doctor:
             # Mark doctor as unavailable
