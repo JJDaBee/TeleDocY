@@ -17,7 +17,7 @@ init_path = os.path.join(project_root, "databases", "consultationhistory.sql")
 class consultationHistory(db.Model):
     __tablename__ = "consultationHistory"
 
-    uuid=db.Column(db.Integer, primary_key=True)
+    uuid=db.Column(db.String(20), primary_key=True)
     nric=db.Column(db.String(9), autoincrement=False)
     dateTime=db.Column(db.DateTime,primary_key=True)
     reasonForVisit=db.Column(db.String(1000), nullable=False)
@@ -25,7 +25,7 @@ class consultationHistory(db.Model):
     diagnosis=db.Column(db.String(1000), nullable=False)
     prescriptions=db.Column(db.String(1000), default=None)
 
-@app.route("/consultationhistory/<int:uuid>")
+@app.route("/consultationhistory/<string:uuid>")
 def find_by_uuid(uuid):
     # quantity = request.args.get("qty", default=1, type=int)
     indiv_history = consultationHistory.query.filter_by(uuid=uuid).all()
