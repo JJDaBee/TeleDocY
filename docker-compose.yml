@@ -34,6 +34,7 @@ services:
             - ./databases/consultationhistory.sql:/docker-entrypoint-initdb.d/consultationhistory.sql
             - ./databases/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./databases/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
+            - ./databases/notification.sql:/docker-entrypoint-initdb.d/notification.sql
 
     consultationhistory:
         build:
@@ -67,6 +68,17 @@ services:
             - "5200:5000"
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/delivery_detail
+    
+    notification:
+        build:
+            context: .
+            dockerfile: ./notification.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5300:5000"
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
 volumes:
   mysql_data:
