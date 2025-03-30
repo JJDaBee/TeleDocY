@@ -6,7 +6,7 @@ app = FastAPI()
 
 # URLs of your existing microservices
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/patients"
-CONSULTATION_HISTORY_URL = "http://localhost:5000/consultationHistory"
+CONSULTATION_HISTORY_URL = "http://localhost:5000/consultation_history"
 MINILM_TOKENIZER_URL = "http://localhost:8003/tokenize"
 
 
