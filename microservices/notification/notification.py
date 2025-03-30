@@ -12,13 +12,13 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "databases", "notification.sql")
+init_path = os.path.join(project_root, "microservices/notification", "notification.sql")
 
 class notification(db.Model):
     __tablename__ = "notificaiton"
 
     uuid=db.Column(db.String(20), primary_key = True)
-    NRIC=db.Column(db.String(9), autoincrement=False)
+    nric=db.Column(db.String(9), autoincrement=False)
     notificationLog=db.Column(db.String(1000),nullable=False)
     dateTime=db.Column(db.DateTime,nullable=False)
     status=db.Column(db.String(100),nullable=False)
@@ -28,14 +28,14 @@ class notification(db.Model):
 def create_notificationrecord():
     data = request.get_json()
     uuid=data.get("uuid")
-    NRIC = data.get("NRIC")
+    nric = data.get("nric")
     dateTime = data.get("dateTime")
     notificationLog=data.get("notificationLog")
     status=data.get("status")
 
     new_notification = notification(
         uuid=uuid,
-        NRIC=NRIC,
+        nric=nric,
         dateTime=dateTime,
         notificationLog=notificationLog,
         status=status 
@@ -54,7 +54,7 @@ def create_notificationrecord():
             "message": "Notification record created successfully.",
             "data": {
                 "uuid" : new_notification.uuid,
-                "NRIC": new_notification.NRIC,
+                "nric": new_notification.nric,
                 "dateTime": new_notification.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
                 "notificationLog": new_notification.notificationLog,
                 "status": new_notification.status
