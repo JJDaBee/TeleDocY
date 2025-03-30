@@ -10,6 +10,9 @@ class QueryData(BaseModel):
 
 OPENAI_MICROSERVICE_URL = "http://localhost:8001/generate"
 
+# Docker Testing !
+# OPENAI_MICROSERVICE_URL = "http://openai-service:8001/generate"
+
 @app.post("/ask-ai")
 def ask_ai(data: QueryData):
     try:
