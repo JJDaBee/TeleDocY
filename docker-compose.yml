@@ -31,15 +31,15 @@ services:
             - "3307:3306"
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./databases/consultationhistory.sql:/docker-entrypoint-initdb.d/consultationhistory.sql
-            - ./databases/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
-            - ./databases/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            - ./databases/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
+            - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
+            - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
+            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
 
     consultationhistory:
         build:
             context: .
-            dockerfile: ./consultationhistory.Dockerfile  
+            dockerfile: ./microservices/consultation_history/consultation_history.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -50,7 +50,7 @@ services:
     medicine_inventory:
         build:
             context: .
-            dockerfile: ./medicine_inventory.Dockerfile  
+            dockerfile: ./microservices/medicine_inventory/medicine_inventory.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -61,18 +61,18 @@ services:
     delivery_detail:
         build:
             context: .
-            dockerfile: ./medicine_inventory.Dockerfile  
+            dockerfile: ./microservices/delivery_detail/delivery_detail.Dockerfile  
         depends_on:
             - mysql
         ports:
             - "5200:5000"
         environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/delivery_detail
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
     
     notification:
         build:
             context: .
-            dockerfile: ./notification.Dockerfile  
+            dockerfile: ./microservices/notification/notification.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -83,7 +83,7 @@ services:
     doctor:
         build:
             context: .
-            dockerfile: ./doctor.Dockerfile  
+            dockerfile: ./microservices/doctor/doctor.Dockerfile  
         depends_on:
             - mysql
         ports:

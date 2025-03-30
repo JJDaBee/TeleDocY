@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy app code
 COPY requirements.txt requirements.txt
-COPY consultationhistory.py /app/
+COPY consultation_history.py /app/
 
 
 # Install dependencies
@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Start Flask app
-CMD ["python", "consultationhistory.py"]
+CMD ["python", "consultation_history.py"]
