@@ -14,7 +14,7 @@ CORS(app)
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/patients"
 CONSULTATION_HISTORY_URL = "http://localhost:5000/consultation_history"
 SCHEDULE_URL= "http://localhost:5400/schedule"
-#DYTE_API_URL= some link
+DYTE_API_URL= "http://localhost:5173/meeting"
 NOTIFICATION_URL= "http://localhost:5300/notification"
 ORDER_SERVICES_URL = "http://localhost:5600/order_services"
 
@@ -65,3 +65,29 @@ def create_consult(data:ConsultationRequest):
         consultation_data = []
         if history_response.status_code == 200:
             consultation_data = history_response.json().get("data", [])
+        
+        #3 Query for available doctor
+        doctor_response = requests.get(SCHEDULE_URL)
+        if doctor_response.status_code == 200:
+            doctor_info = doctor_response.json().get("data")
+            doctor_name = doctor_info["doctorName"] if doctor_info else None
+
+        if doctor_name:
+            # Available doctor found
+            print(f"Available doctor: {doctor_name}")
+        else:
+            raise HTTPException(status_code=404, detail="No available doctors at the moment.")
+        
+        #4 Get meeting id for zoom link for patient with uuid and doctor name from step 3
+        dyte_response = request.post(DYTE_API_URL, json={
+            "query": data.symptom_description, #need to tweak once know 
+            "target_service": "consumer",
+            "enhance_query": True
+        })
+
+        #5 Message patient Zoom link via AMQP(?)
+
+        #6 Update consultation history (needs information put in by doctor)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
