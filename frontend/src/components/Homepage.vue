@@ -1,6 +1,19 @@
 <!-- src/components/Homepage.vue -->
 <template>
     <div class="homepage">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="logo">TeleDocY</div>
+            <ul class="nav-links">
+                <li><router-link to="/">Home</router-link></li>
+                <li><router-link to="/consult">Consulations</router-link></li>
+                <li><router-link to="/about">About Us</router-link></li>
+                <li><router-link to="/symptom">Symptom Checker</router-link></li>
+                <li><router-link to="/pharmacy">Pharmacy</router-link></li>
+                <li><router-link to="/profile">Profile</router-link></li>
+            </ul>
+        </nav>
+
         <!-- Hero Section -->
         <header class="hero">
             <div class="hero-overlay">
@@ -9,9 +22,7 @@
                     Your trusted telehealth portal connecting you to quality
                     healthcare from the comfort of your home.
                 </p>
-                <router-link to="/consult" class="btn"
-                    >Consultation Services</router-link
-                >
+                <router-link to="/consult" class="btn">Consultation Services</router-link>
             </div>
         </header>
 
@@ -20,12 +31,11 @@
             <h2>About Us</h2>
             <p>
                 We are TeleDocY, committed to revolutionizing healthcare with
-                innovative telemedicine services. [Customize your About Us text
-                here.]
+                innovative telemedicine services. [Customize your About Us text here.]
             </p>
         </section>
 
-        <!-- Media Section -->
+      
 
         <!-- Footer -->
         <footer>
@@ -45,6 +55,32 @@ export default {
 .homepage {
     font-family: 'Arial', sans-serif;
     color: #333;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+    background-color: #4caf50;
+}
+
+.navbar .logo {
+    font-size: 1.5em;
+    color: white;
+    font-weight: bold;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1em;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: white;
 }
 
 /* Hero Section */
@@ -114,19 +150,15 @@ export default {
     flex-wrap: wrap;
     justify-content: center;
     padding: 2em;
+    gap: 1.5em;
 }
 
 .media-item {
     flex: 1 1 300px;
-    margin: 1em;
     text-align: center;
 }
 
-.media-item img {
-    max-width: 100%;
-    border-radius: 8px;
-}
-
+.media-item img,
 .media-item video {
     max-width: 100%;
     border-radius: 8px;
