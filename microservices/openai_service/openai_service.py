@@ -1,21 +1,21 @@
-import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env
+load_dotenv()
 
 app = FastAPI()
 
-load_dotenv()
-# Initialize OpenAI Client
-api_keyy = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key=api_keyy)
+# Initialize OpenAI Client with the API key from .env
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Request model
 class RequestData(BaseModel):
     prompt: str
-    model: str = "gpt-4o-mini"
+    model: str = "gpt-4o-mini" 
 
 @app.post("/generate")
 def generate_text(data: RequestData):
