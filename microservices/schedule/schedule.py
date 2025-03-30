@@ -20,7 +20,7 @@ class Schedule(db.Model):
     next_available_time = db.Column(db.DateTime, nullable=True)
 
 # API Endpoint to Get First Available Doctor
-@app.route("/availableDoctor", methods=['GET'])
+@app.route("/schedule", methods=['GET'])
 def get_first_available_doctor():
     now = datetime.utcnow()
 
@@ -31,7 +31,7 @@ def get_first_available_doctor():
 
     if available_doctor:
         # Set the doctor to be unavailable for the next 30 minutes
-        available_doctor.next_available_time = datetime.utcnow() + timedelta(seconds=30)
+        available_doctor.next_available_time = datetime.utcnow() + timedelta(minutes=30) # RMB TO CHANGE BACK TO 30 MINUTES!!
 
         db.session.commit()
 
@@ -48,4 +48,4 @@ def get_first_available_doctor():
     }), 404
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(port=5400, debug=True)

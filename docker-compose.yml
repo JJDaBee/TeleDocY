@@ -80,6 +80,63 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
+<<<<<<< HEAD
+=======
+    order:
+        build:
+            context: .
+            dockerfile: ./microservices/order_service/order_service.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5600:5000"
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
+
+    postgres:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: schedule
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
+            - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+
+        networks:
+            - app-network
+
+    schedule:
+        build:
+            context: .
+            dockerfile: ./microservices/schedule/schedule.Dockerfile
+        depends_on:
+            - postgres
+        ports:
+            - "5400:5000"
+        environment:
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
+        networks:
+            - app-network
+
+    doctor:
+        build:
+            context: .
+            dockerfile: ./microservices/doctor/doctor.Dockerfile
+        depends_on:
+            - postgres
+        ports:
+            - "5500:5000"
+        environment:
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
+        networks:
+            - app-network
+    
+>>>>>>> belle-doctor
 volumes:
   mysql_data:
 
