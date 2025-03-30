@@ -31,7 +31,9 @@ services:
             - "3307:3306"
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./databases/init.sql:/docker-entrypoint-initdb.d/init.sql  # <-- Right here
+            - ./databases/consultationhistory.sql:/docker-entrypoint-initdb.d/consultationhistory.sql
+            - ./databases/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
+            - ./databases/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
 
     consultationhistory:
         build:
@@ -43,6 +45,28 @@ services:
             - "5000:5000"
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/consultationHistory
+    
+    medicine_inventory:
+        build:
+            context: .
+            dockerfile: ./medicine_inventory.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5100:5000"
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/medicineInventory
+
+    delivery_detail:
+        build:
+            context: .
+            dockerfile: ./medicine_inventory.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5200:5000"
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/delivery_detail
 
 volumes:
   mysql_data:

@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
+import os
+import subprocess
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/deliveryDetail'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
@@ -13,10 +14,10 @@ class deliveryDetail(db.Model):
 
     deliveryAddress = db.Column(db.String(1000),primary_key=True, nullable=False)
     medication = db.Column(db.String(1000), nullable=False)
-    deliverySurcharge = db.Column(db.Integer(1000), nullable=False)
+    deliverySurcharge = db.Column(db.Integer, nullable=False)
     deliveryDate = db.Column(db.DateTime,primary_key=True, nullable=False)
 
-@app.route("/order/deliveryDetail/<string:deliveryAddress>")
+@app.route("/order/delivery_detail/<string:deliveryAddress>")
 
 def get_delivery_surcharge(deliveryAddress):
     # Query the database to find the delivery details based on delivery address
@@ -38,4 +39,4 @@ def get_delivery_surcharge(deliveryAddress):
     }), 200
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(port=5200, debug=True)

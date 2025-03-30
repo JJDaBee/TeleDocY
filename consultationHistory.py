@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
 import os
+import subprocess
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@mysql:3306/consultationHistory')
@@ -9,12 +10,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
+project_root = os.path.dirname(os.path.abspath(__file__))
+init_path = os.path.join(project_root, "databases", "consultationhistory.sql")
+
 
 
 class consultationHistory(db.Model):
     __tablename__ = "consultationHistory"
 
-    uuid=db.Column(db.Integer, primary_key=True)
+    uuid=db.Column(db.String(20), primary_key=True)
     nric=db.Column(db.String(9), autoincrement=False)
     dateTime=db.Column(db.DateTime,primary_key=True)
     reasonForVisit=db.Column(db.String(1000), nullable=False)
@@ -22,8 +26,7 @@ class consultationHistory(db.Model):
     diagnosis=db.Column(db.String(1000), nullable=False)
     prescriptions=db.Column(db.String(1000), default=None)
 
-
-@app.route("/consultationhistory/<int:uuid>")
+@app.route("/consultationhistory/<string:uuid>")
 def find_by_uuid(uuid):
     # quantity = request.args.get("qty", default=1, type=int)
     indiv_history = consultationHistory.query.filter_by(uuid=uuid).all()
@@ -80,6 +83,11 @@ def create_consultationrecord():
         db.session.add(new_consultation)
         db.session.commit()
 
+        result =subprocess.run([
+            "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
+            "mysqldump", "-u", "root", "-proot", "consultationHistory"
+        ], stdout=open(init_path, "w"))
+        print("mysqldump executed. Return code:", result.returncode)
         return jsonify({
             "code": 201,
             "message": "Consultation record created successfully.",
@@ -87,7 +95,7 @@ def create_consultationrecord():
                 "uuid": new_consultation.uuid,
                 "nric": new_consultation.nric,
                 "dateTime": new_consultation.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                "reasonforVisit": new_consultation.reasonForVisit,
+                "reasonForVisit": new_consultation.reasonForVisit,
                 "doctorName": new_consultation.doctorName,
                 "diagnosis": new_consultation.diagnosis,
                 "prescriptions": new_consultation.prescriptions
@@ -103,4 +111,5 @@ def create_consultationrecord():
         }), 500
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
