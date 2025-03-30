@@ -80,8 +80,6 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
-<<<<<<< HEAD
-=======
     order:
         build:
             context: .
@@ -136,7 +134,6 @@ services:
         networks:
             - app-network
     
->>>>>>> belle-doctor
 volumes:
   mysql_data:
 
