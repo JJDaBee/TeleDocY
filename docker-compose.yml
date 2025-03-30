@@ -68,6 +68,17 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/delivery_detail
 
+    doctor:
+        build:
+            context: .
+            dockerfile: ./doctor.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5300:5000"
+        environment:
+            - 'DB_URI=postgresql+psycopg2://postgres:postgres@localhost:5432/doctor'
+
 volumes:
   mysql_data:
 
