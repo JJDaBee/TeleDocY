@@ -1,12 +1,13 @@
-import threading
-import time
+from datetime import datetime, timedelta
+import os
+import subprocess
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
 # PostgreSQL Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/schedule'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI', 'postgresql+psycopg2://postgres:postgres@localhost:5432/schedule')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -16,41 +17,30 @@ class Schedule(db.Model):
     __tablename__ = "schedule"
 
     doctorname = db.Column(db.String(100), primary_key=True)
-    availability = db.Column(db.Boolean, nullable=False)
-
-# Function to reset availability after 30 minutes
-def reset_availability_after_delay(doctor_name):
-    """ Marks doctor as available after 30 minutes """
-    time.sleep(1800)  # Wait for 30 minutes (1800 seconds)
-    
-    with app.app_context():  # Ensure the Flask app context is available
-        doctor = Schedule.query.filter_by(doctorname=doctor_name).first()
-        if doctor:
-            doctor.availability = True  # Mark as available
-            db.session.commit()
-            print(f"[INFO] {doctor_name} is now available again.")
+    next_available_time = db.Column(db.DateTime, nullable=True)
 
 # API Endpoint to Get First Available Doctor
 @app.route("/availableDoctor", methods=['GET'])
 def get_first_available_doctor():
-    with app.app_context():
-        available_doctor = Schedule.query.filter_by(availability=True).first()
+    now = datetime.utcnow()
 
-        if available_doctor:
-            # Mark doctor as unavailable
-            available_doctor.availability = False
-            db.session.commit()
+    # Find a doctor who is available right now (or never assigned before)
+    available_doctor = Schedule.query.filter(
+        (Schedule.next_available_time == None) | (Schedule.next_available_time <= now)
+    ).first()
 
-            # Start a thread to reset availability after 30 minutes
-            reset_thread = threading.Thread(target=reset_availability_after_delay, args=(available_doctor.doctorname,))
-            reset_thread.start()
+    if available_doctor:
+        # Set the doctor to be unavailable for the next 30 minutes
+        available_doctor.next_available_time = datetime.utcnow() + timedelta(seconds=30)
 
-            return jsonify({
-                "code": 200,
-                "data": {
-                    "doctorName": available_doctor.doctorname
-                }
-            }), 200
+        db.session.commit()
+
+        return jsonify({
+            "code": 200,
+            "data": {
+                "doctorName": available_doctor.doctorname
+            }
+        }), 200
 
     return jsonify({
         "code": 404,
@@ -59,4 +49,3 @@ def get_first_available_doctor():
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
-
