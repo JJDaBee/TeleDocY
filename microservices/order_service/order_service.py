@@ -24,7 +24,7 @@ init_path = os.path.join(project_root, "microservices/order_services", "order_se
 
 # Orders Model
 class Order(db.Model):
-    __tablename__ = "orders"
+    __tablename__ = "order"
 
     orderID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uuid=db.Column(db.String(20), primary_key=True)
@@ -121,5 +121,5 @@ def place_order():
 
 # Run Flask App
 if __name__ == '__main__':
-    app.run(port=5400, debug=True
+    app.run(port=5600, debug=True
     )
