@@ -9,8 +9,3 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     // while trying out the sample
     <App />
 );
-// createRoot(document.getElementById('root')!).render(
-//     <StrictMode>
-//         <App />
-//     </StrictMode>
-// );
