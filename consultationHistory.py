@@ -1,53 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
+import os
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost:3306/consultationHistory'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@mysql:3306/consultationHistory')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 
-def run_sql_file(filename):
-    """ Runs an SQL file to create the table and insert initial data """
-    with open(filename, 'r') as file:
-        sql_script = file.read()
-
-    # Establish a connection and run the script
-    connection = db.engine.raw_connection()  # Using SQLAlchemy engine to get a connection
-
-    try:
-        cursor = connection.cursor()
-        for statement in sql_script.split(';'):
-            if statement.strip():  # Skip empty statements
-                cursor.execute(statement)
-        connection.commit()
-        print("SQL script executed successfully!")
-    except Exception as e:
-        print(f"Error executing SQL script: {e}")
-    finally:
-        connection.close()
-
-def table_exists():
-    """Check if the table exists in the database"""
-    try:
-        # Check if consultationHistory table exists by querying it
-        result = db.session.execute('SHOW TABLES LIKE "consultationHistory"')
-        return result.fetchone() is not None
-    except OperationalError as e:
-        # If an error occurs while querying, treat it as the table not existing
-        print(f"Error checking table existence: {e}")
-        return False
-
-# Run the SQL file when the app starts, but only if the table does not exist yet
-if not table_exists():
-    run_sql_file('consultationHistory.sql')
 
 class consultationHistory(db.Model):
     __tablename__ = "consultationHistory"
 
-    patientId=db.Column(db.Integer, primary_key=True)
-    NRIC=db.Column(db.String(9), autoincrement=False)
+    uuid=db.Column(db.Integer, primary_key=True)
+    nric=db.Column(db.String(9), autoincrement=False)
     dateTime=db.Column(db.DateTime,primary_key=True)
     reasonForVisit=db.Column(db.String(1000), nullable=False)
     doctorName= db.Column(db.String(100), nullable=False)
@@ -55,23 +23,24 @@ class consultationHistory(db.Model):
     prescriptions=db.Column(db.String(1000), default=None)
 
 
-@app.route("/consultationHistory/<int:patientId>")
-def find_by_patientId(patientId):
+@app.route("/consultationhistory/<int:uuid>")
+def find_by_uuid(uuid):
     # quantity = request.args.get("qty", default=1, type=int)
-    indiv_history = consultationHistory.query.filter_by(patientId=patientId).all()
+    indiv_history = consultationHistory.query.filter_by(uuid=uuid).all()
 
     if not indiv_history:
         return jsonify(
             {
                 "code": 404,
-                "message": "No consultation history found for this patientId."
+                "message": "No consultation history found for this uuid."
             }
         ), 404
     
     indiv_historylist = []
     for record in indiv_history:
         indiv_historylist.append({
-            "NRIC": record.NRIC,
+            "uuid": record.uuid,
+            "nric": record.nric,
             "dateTime": record.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
             "reasonForVisit": record.reasonForVisit,
             "doctorName": record.doctorName,
@@ -86,11 +55,11 @@ def find_by_patientId(patientId):
         }
     ), 200
 
-@app.route("/consultationHistory", methods=["POST"])
+@app.route("/consultationhistory", methods=["POST"])
 def create_consultationrecord():
     data = request.get_json()
-    patientId= data.get("patientId")
-    NRIC = data.get("NRIC")
+    uuid= data.get("uuid")
+    nric = data.get("nric")
     dateTime = data.get("dateTime")
     reasonForVisit = data.get("reasonForVisit")
     doctorName = data.get("doctorName")
@@ -98,8 +67,8 @@ def create_consultationrecord():
     prescriptions = data.get("prescriptions")
 
     new_consultation = consultationHistory(
-        patientId=patientId,
-        NRIC=NRIC,
+        uuid=uuid,
+        nric=nric,
         dateTime=dateTime,
         reasonForVisit=reasonForVisit,
         doctorName=doctorName,
@@ -115,8 +84,8 @@ def create_consultationrecord():
             "code": 201,
             "message": "Consultation record created successfully.",
             "data": {
-                "patientId": new_consultation.patientId,
-                "NRIC": new_consultation.NRIC,
+                "uuid": new_consultation.uuid,
+                "nric": new_consultation.nric,
                 "dateTime": new_consultation.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
                 "reasonforVisit": new_consultation.reasonForVisit,
                 "doctorName": new_consultation.doctorName,

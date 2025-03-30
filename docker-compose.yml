@@ -20,6 +20,32 @@ services:
             - VITE_API_URL=http://localhost:4000
         networks:
             - app-network
+    #FOR SQL
+    mysql:
+        image: mysql:8.0
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: consultationHistory
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./databases/init.sql:/docker-entrypoint-initdb.d/init.sql  # <-- Right here
+
+    consultationhistory:
+        build:
+            context: .
+            dockerfile: ./consultationhistory.Dockerfile  
+        depends_on:
+            - mysql
+        ports:
+            - "5000:5000"
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/consultationHistory
+
+volumes:
+  mysql_data:
 
 networks:
     app-network:
