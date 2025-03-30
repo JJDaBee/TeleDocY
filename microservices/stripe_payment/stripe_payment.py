@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # Set Stripe API key from environment (fallback to empty string if missing)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
-PORT = int(os.environ.get('PORT', 3000))
+PORT = int(os.environ.get('PORT', 3001))
 
 @app.route('/create-checkout', methods=['POST'])
 def create_checkout():
