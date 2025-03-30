@@ -9,7 +9,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "databases", "medicine_inventory.sql")
+init_path = os.path.join(project_root, "microservices/medicine_inventory", "medicine_inventory.sql")
 
 class medicineInventory(db.Model):
     __tablename__ = "medicineInventory"

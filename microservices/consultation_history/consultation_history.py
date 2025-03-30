@@ -11,7 +11,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "databases", "consultationhistory.sql")
+init_path = os.path.join(project_root, "microservices/consultation_history", "consultation_history.sql")
 
 
 
@@ -26,7 +26,7 @@ class consultationHistory(db.Model):
     diagnosis=db.Column(db.String(1000), nullable=False)
     prescriptions=db.Column(db.String(1000), default=None)
 
-@app.route("/consultationhistory/<string:uuid>")
+@app.route("/consultation_history/<string:uuid>")
 def find_by_uuid(uuid):
     # quantity = request.args.get("qty", default=1, type=int)
     indiv_history = consultationHistory.query.filter_by(uuid=uuid).all()
