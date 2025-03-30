@@ -31,7 +31,6 @@ def check_symptoms(data: SymptomCheckRequest):
         patient_response = requests.get(f"{PATIENT_API_URL}/{data.uuid}")
         if patient_response.status_code != 200:
             raise HTTPException(status_code=patient_response.status_code, detail="Failed to fetch patient info")
-        print(patient_response.json())
         patient_data = patient_response.json()["patient"]
         nric = patient_data["nric"]
 
@@ -72,4 +71,4 @@ def check_symptoms(data: SymptomCheckRequest):
 # response = requests.post("http://localhost:8002/ask-ai", json={"question": "Explain AI in 3 sentences"})
 # print(response.json())
 
-# C:\wamp64\www\GitHub\TeleDocY\microservices>curl -X POST http://localhost:8000/check-symptoms -H "Content-Type: application/json" -d "{\"uuid\":\"uuid-9300\", \"symptom_description\":\"Am I having a heart attack?\"}"
+# curl -X POST "http://localhost:8001/generate" -H "Content-Type: application/json" -d "{\"prompt\": \"Write a haiku about AI\"}"
