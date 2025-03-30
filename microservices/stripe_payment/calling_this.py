@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # Set your Stripe API key
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
-PORT = 3000
+PORT = 3001
 
 # Store the latest checkout URL for the redirect endpoint
 latest_checkout_url = None
@@ -29,7 +29,7 @@ def create_checkout():
             mode='payment',
             line_items=[{
                 'price_data': {
-                    'currency': 'usd',
+                    'currency': 'sgd',
                     'product_data': {
                         'name': description,
                     },
