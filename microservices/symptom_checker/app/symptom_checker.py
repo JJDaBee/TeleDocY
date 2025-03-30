@@ -1,8 +1,17 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import requests
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or ["http://localhost:3000"] for stricter security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # URLs of your existing microservices
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/patients"
@@ -22,6 +31,7 @@ def check_symptoms(data: SymptomCheckRequest):
         patient_response = requests.get(f"{PATIENT_API_URL}/{data.uuid}")
         if patient_response.status_code != 200:
             raise HTTPException(status_code=patient_response.status_code, detail="Failed to fetch patient info")
+        print(patient_response.json())
         patient_data = patient_response.json()["patient"]
         nric = patient_data["nric"]
 
@@ -62,4 +72,4 @@ def check_symptoms(data: SymptomCheckRequest):
 # response = requests.post("http://localhost:8002/ask-ai", json={"question": "Explain AI in 3 sentences"})
 # print(response.json())
 
-# curl -X POST "http://localhost:8001/generate" -H "Content-Type: application/json" -d "{\"prompt\": \"Write a haiku about AI\"}"
+# C:\wamp64\www\GitHub\TeleDocY\microservices>curl -X POST http://localhost:8000/check-symptoms -H "Content-Type: application/json" -d "{\"uuid\":\"uuid-9300\", \"symptom_description\":\"Am I having a heart attack?\"}"
