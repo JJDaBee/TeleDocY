@@ -35,11 +35,12 @@ services:
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
             - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/oreder_service/order_service.sql:/docker-entrypoint-initdb.d/order_service.sql
 
     consultationhistory:
         build:
-            context: .
-            dockerfile: ./microservices/consultation_history/consultation_history.Dockerfile  
+            context: ./microservices/consultation_history
+            dockerfile: consultation_history.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -49,8 +50,8 @@ services:
     
     medicine_inventory:
         build:
-            context: .
-            dockerfile: ./microservices/medicine_inventory/medicine_inventory.Dockerfile  
+            context: ./microservices/medicine_inventory
+            dockerfile: medicine_inventory.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -60,8 +61,8 @@ services:
 
     delivery_detail:
         build:
-            context: .
-            dockerfile: ./microservices/delivery_detail/delivery_detail.Dockerfile  
+            context: ./microservices/delivery_detail
+            dockerfile: delivery_detail.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -71,8 +72,8 @@ services:
     
     notification:
         build:
-            context: .
-            dockerfile: ./microservices/notification/notification.Dockerfile  
+            context: ./microservices/notification
+            dockerfile: notification.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -82,8 +83,8 @@ services:
 
     order:
         build:
-            context: .
-            dockerfile: ./microservices/order_service/order_service.Dockerfile  
+            context: ./microservices/order_service
+            dockerfile: order_service.Dockerfile  
         depends_on:
             - mysql
         ports:
@@ -110,8 +111,8 @@ services:
 
     schedule:
         build:
-            context: .
-            dockerfile: ./microservices/schedule/schedule.Dockerfile
+            context: ./microservices/schedule
+            dockerfile: schedule.Dockerfile
         depends_on:
             - postgres
         ports:
@@ -123,8 +124,8 @@ services:
 
     doctor:
         build:
-            context: .
-            dockerfile: ./microservices/doctor/doctor.Dockerfile
+            context: ./microservices/doctor
+            dockerfile: doctor.Dockerfile
         depends_on:
             - postgres
         ports:
@@ -136,6 +137,7 @@ services:
     
 volumes:
   mysql_data:
+  postgres_data:
 
 networks:
     app-network:

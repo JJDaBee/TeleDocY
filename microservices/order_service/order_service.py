@@ -24,7 +24,7 @@ init_path = os.path.join(project_root, "microservices/order_services", "order_se
 
 # Orders Model
 class Order(db.Model):
-    __tablename__ = "order"
+    __tablename__ = "orderService"
 
     orderID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uuid=db.Column(db.String(20), primary_key=True)
