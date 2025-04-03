@@ -1,5 +1,18 @@
 version: '3.8'
 
+# gateway: port 4000
+# frontend: port 5173
+# mysql: port 3307
+# postgres: port 5432
+# dyte wrapper: port 5000
+# consultation_history: port 5001
+# medicine_inventory: port 5100
+# delivery_detail: port 5200
+# notification: port 5300
+# schedule: port 5400
+# doctor: port 5500
+# order_service: port 5600
+
 services:
     gateway:
         container_name: teledocy-gateway-1
@@ -28,7 +41,7 @@ services:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: consultationHistory
         ports:
-            - "3307:3306"
+            - '3307:3306'
         volumes:
             - mysql_data:/var/lib/mysql
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
@@ -40,55 +53,55 @@ services:
     consultationhistory:
         build:
             context: ./microservices/consultation_history
-            dockerfile: consultation_history.Dockerfile  
+            dockerfile: consultation_history.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5000:5000"
+            - '5001:5000'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/consultationHistory
-    
+
     medicine_inventory:
         build:
             context: ./microservices/medicine_inventory
-            dockerfile: medicine_inventory.Dockerfile  
+            dockerfile: medicine_inventory.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5100:5000"
+            - '5100:5000'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/medicineInventory
 
     delivery_detail:
         build:
             context: ./microservices/delivery_detail
-            dockerfile: delivery_detail.Dockerfile  
+            dockerfile: delivery_detail.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5200:5000"
+            - '5200:5000'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
-    
+
     notification:
         build:
             context: ./microservices/notification
-            dockerfile: notification.Dockerfile  
+            dockerfile: notification.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5300:5000"
+            - '5300:5000'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
     order:
         build:
             context: ./microservices/order_service
-            dockerfile: order_service.Dockerfile  
+            dockerfile: order_service.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5600:5000"
+            - '5600:5000'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
 
@@ -100,7 +113,7 @@ services:
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: schedule
         ports:
-            - "5432:5432"
+            - '5432:5432'
         volumes:
             - postgres_data:/var/lib/postgresql/data
             - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
@@ -116,7 +129,7 @@ services:
         depends_on:
             - postgres
         ports:
-            - "5400:5000"
+            - '5400:5000'
         environment:
             - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
         networks:
@@ -129,15 +142,15 @@ services:
         depends_on:
             - postgres
         ports:
-            - "5500:5000"
+            - '5500:5000'
         environment:
             - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
         networks:
             - app-network
-    
+
 volumes:
-  mysql_data:
-  postgres_data:
+    mysql_data:
+    postgres_data:
 
 networks:
     app-network:
