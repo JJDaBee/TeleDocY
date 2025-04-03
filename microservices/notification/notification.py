@@ -15,7 +15,7 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 init_path = os.path.join(project_root, "microservices/notification", "notification.sql")
 
 class notification(db.Model):
-    __tablename__ = "notificaiton"
+    __tablename__ = "notification"
 
     uuid=db.Column(db.String(20), primary_key = True)
     nric=db.Column(db.String(9), autoincrement=False)
@@ -68,6 +68,21 @@ def create_notificationrecord():
             "message": "An error occurred while creating the consultation record.",
             "error": str(e)
         }), 500
+    
+@app.route("/notifications", methods=["GET"])
+def get_notifications():
+    notifications = notification.query.all()
+    return jsonify([
+        {
+            "uuid": n.uuid,
+            "nric": n.nric,
+            "dateTime": n.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
+            "notificationLog": n.notificationLog,
+            "status": n.status
+        }
+        for n in notifications
+    ]), 200
+
 
 if __name__ == '__main__':
     app.run(port=5300, debug=True) 
