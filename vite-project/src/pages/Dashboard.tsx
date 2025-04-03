@@ -102,32 +102,41 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
                                 try {
                                     // 🔄 Try to get a token from backend
-                                    const res = await fetch('http://localhost:5000/create-token', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                        body: JSON.stringify({ participantName }),
-                                    });
-
-                                    let authToken: string;
+                                    const res = await fetch(
+                                        'http://localhost:5000/create-token',
+                                        {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                participantName,
+                                            }),
+                                        }
+                                    );
+                                    let authToken = '';
 
                                     if (res.ok) {
                                         const data = await res.json();
                                         authToken = data.authToken;
-                                        console.log("Received token from backend:", authToken);
-                                    } else {
-                                        console.warn("Backend failed, using fallback token.");
-                                        // ❗ HARDCODED TOKEN FOR TESTING
-                                        authToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6Ijc2NDVlM2E3LWY0N2MtNDJjNy1iNWM3LTI3NjA1NDk2OGY4OCIsIm1lZXRpbmdJZCI6ImJiYjc4ZTVhLTQ0ZTUtNDc4OC1hY2M2LTdiNzc4NjM0NGIwOCIsInBhcnRpY2lwYW50SWQiOiJhYWFmZGNkMC1hNmJkLTRkODEtODVjOS1kNmJkN2U3OTFkYWUiLCJwcmVzZXRJZCI6ImE5MjI4MWFmLTAyMTQtNGNhNS1iOGJkLTA2ZmVjZWE0NWQyMSIsImlhdCI6MTc0MzYxNjYxNiwiZXhwIjoxNzUyMjU2NjE2fQ.uFKrflU8_Bee1p5CgMQB7KWy45chcI1-8lO0o37sef_p5VLDVK5-oTVPrr5AO5ZsvX2yVym2FKWx3G8WRgTcCl0017nzDQgw-kP1ssJAPpXo2V6zw4KFxR8Oq4Nh8QwOtCyEtZRFkrf9pRP_jop-V74PB0yN9hcwwTsQ2WuUnR6Xj73NfViY9pPm0EImrg5FFNula_rE4mkHa75R-YqSic_RFgCUzMgjRwjogBosRbw-GjUUE0acI0Dmk0gZ82QGRVDqgSAvWZgR1Lm6Dn3kC3DN_GVFrYgT7rRYasuNacUSFZJyw-AQMxbd_QPekB4CxXC9FooUb6eru8xPBJs7gw";
+                                        console.log(
+                                            'Received token from backend:',
+                                            authToken
+                                        );
                                     }
 
                                     // Join Dyte meeting with token
                                     const meetingURL = `/meeting?authToken=${authToken}`;
                                     window.open(meetingURL, '_blank');
                                 } catch (error) {
-                                    console.error('Error fetching token:', error);
-                                    alert('Unable to join the consultation. Please try again.');
+                                    console.error(
+                                        'Error fetching token:',
+                                        error
+                                    );
+                                    alert(
+                                        'Unable to join the consultation. Please try again.'
+                                    );
                                 }
                             }}
                             style={{
