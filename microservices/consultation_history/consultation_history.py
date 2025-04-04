@@ -58,7 +58,7 @@ def find_by_uuid(uuid):
         }
     ), 200
 
-@app.route("/consultationhistory", methods=["POST"])
+@app.route("/consultation_history", methods=["POST"])
 def create_consultationrecord():
     data = request.get_json()
     uuid= data.get("uuid")
