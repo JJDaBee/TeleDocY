@@ -28,4 +28,4 @@ def generate_text(data: RequestData):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# uvicorn openai_microservice:app --host 0.0.0.0 --port 8001
+# uvicorn openai_service:app --host 0.0.0.0 --port 4002
