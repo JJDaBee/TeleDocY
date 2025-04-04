@@ -1,11 +1,9 @@
-<!-- src/App.vue -->
 <template>
     <div id="app">
         <nav>
             <router-link to="/" class="tab" exact>Home</router-link>
-            <router-link to="/consult" class="tab"
-                >Consultation Services</router-link
-            >
+            <router-link to="/consult" class="tab">Consultation Services</router-link>
+            <router-link to="/symptom-checker" class="tab">Symptom Checker</router-link> <!-- ✅ Add this line -->
         </nav>
         <router-view />
     </div>

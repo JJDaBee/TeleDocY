@@ -1,9 +1,9 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import Homepage from '../components/Homepage.vue';
 import Consult from '../components/Consult.vue';
 import payment from '../components/payment.vue';
 import doctorOrder from '../components/doctorOrder.vue';
+import SymptomChecker from '../components/SymptomChecker.vue'; 
 
 const routes = [
     {
@@ -16,7 +16,6 @@ const routes = [
         name: 'Consultation',
         component: Consult,
     },
-   
     {
         path: '/payment',
         name: 'Payment',
@@ -25,7 +24,12 @@ const routes = [
     {
         path: '/doctorOrder',
         name: 'DoctorOrder',
-        component: doctorOrder
+        component: doctorOrder,
+    },
+    {
+        path: '/symptom-checker',
+        name: 'SymptomChecker',
+        component: SymptomChecker,
     }
 ];
 

@@ -8,7 +8,7 @@
                 <li><router-link to="/">Home</router-link></li>
                 <li><router-link to="/consult">Consulations</router-link></li>
                 <li><router-link to="/about">About Us</router-link></li>
-                <li><router-link to="/symptom">Symptom Checker</router-link></li>
+                <li><router-link to="/symptom-checker">Symptom Checker</router-link></li>
                 <li><router-link to="/pharmacy">Pharmacy</router-link></li>
                 <li><router-link to="/profile">Profile</router-link></li>
             </ul>
