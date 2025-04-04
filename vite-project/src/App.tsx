@@ -7,6 +7,9 @@ import SymptomChecker from './pages/SymptomChecker';
 import MeetingPage from './pages/MeetingPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import Navbar from './components/navbar';
+import Footer from './components/footer';
+
 
 type User = {
     username: string;
@@ -19,23 +22,7 @@ function App() {
 
     return (
         <Router>
-            <nav style={{ padding: '10px' }}>
-                <Link to="/" style={{ marginRight: '10px' }}>
-                    Home
-                </Link>
-                <Link to="/consultation" style={{ marginRight: '10px' }}>
-                    Consultation
-                </Link>
-                <Link to="/symptom-checker" style={{ marginRight: '10px' }}>
-                    Symptom Checker
-                </Link>
-                <Link to="/login" style={{ marginRight: '10px' }}>
-                    Login
-                </Link>
-                {user?.role === 'doctor' && (
-                    <Link to="/dashboard">Dashboard</Link>
-                )}
-            </nav>
+          
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/consultation" element={<Consultation />} />

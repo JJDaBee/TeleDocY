@@ -1,6 +1,9 @@
 // src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/navbar';
+import Footer from '../components/footer';
+
 
 type User = {
     username: string;
@@ -37,33 +40,89 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
     };
 
     return (
-        <div style={{ padding: 20 }}>
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-            />
-            <br />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <br />
-            <button onClick={handleLogin}>Login</button>
-            <div>
-                <h3>Test Accounts</h3>
-                <ul>
-                    <li>Patient: p1 / 111</li>
-                    <li>Doctor: d1 / 111</li>
-                </ul>
+        <>
+            <Navbar />
+            <div
+                style={{
+                    minHeight: '100vh',
+                    width:'100vw',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
+                    padding: '40px 0px',
+                    margin: '0 auto'
+                }}
+            >
+                <div
+                    style={{
+                        backgroundColor: 'white',
+                        padding: '40px',
+                        borderRadius: '12px',
+                        boxShadow: '0 0 20px rgba(0,0,0,0.1)',
+                        maxWidth: '400px',
+                        width: '100%',
+                        textAlign: 'center',
+                    }}
+                >
+                    <h2 style={{ marginBottom: '24px' , margin:'0 auto', color: '#007BFF' }}>Login to <span style={{ color: '#007BFF' }}>TeleDoc</span></h2>
+
+                    {error && <p style={{ color: 'red', marginBottom: '16px' }}>{error}</p>}
+
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        style={inputStyle}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={inputStyle}
+                    />
+
+                    <button
+                        onClick={handleLogin}
+                        style={{
+                            marginTop: '20px',
+                            padding: '12px 24px',
+                            width: '50%',
+                            fontSize: '1rem',
+                            backgroundColor: '#007BFF',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            margin: '10 auto'
+                        }}
+                    >
+                        Login
+                    </button>
+
+                    <div style={{ marginTop: '30px', textAlign: 'left' }}>
+                        <h4>Test Accounts</h4>
+                        <ul style={{ paddingLeft: '20px', color: '#555' }}>
+                            <li>👤 Patient: <strong>p1 / 111</strong></li>
+                            <li>🩺 Doctor: <strong>d1 / 111</strong></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </div>
+            <Footer />
+        </>
     );
+};
+
+const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px',
+    margin: '10px 0',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    fontSize: '1rem',
 };
 
 export default LoginPage;
