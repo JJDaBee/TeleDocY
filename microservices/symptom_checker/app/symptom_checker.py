@@ -15,8 +15,8 @@ app.add_middleware(
 
 # URLs of your existing microservices
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/patients"
-CONSULTATION_HISTORY_URL = "http://localhost:5000/consultation_history"
-MINILM_TOKENIZER_URL = "http://localhost:8003/tokenize"
+CONSULTATION_HISTORY_URL = "http://localhost:5001/consultation_history"
+MINILM_TOKENIZER_URL = "http://localhost:4001/tokenize"
 
 
 # Request model
@@ -43,7 +43,7 @@ def check_symptoms(data: SymptomCheckRequest):
         # Step 3: Tokenize & Enhance Query via MiniLM
         tokenizer_response = requests.post(MINILM_TOKENIZER_URL, json={
             "query": data.symptom_description,
-            "target_service": "consumer",
+            "target_service": "openai",
             "enhance_query": True
         })
         if tokenizer_response.status_code != 200:
@@ -62,13 +62,8 @@ def check_symptoms(data: SymptomCheckRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Run with:
-# uvicorn symptom_checker:app --host 0.0.0.0 --port 8000
+# uvicorn symptom_checker:app --host 0.0.0.0 --port 4000
 
 ####################################################################3
-
-# import requests
-
-# response = requests.post("http://localhost:8002/ask-ai", json={"question": "Explain AI in 3 sentences"})
-# print(response.json())
 
 # curl -X POST "http://localhost:8001/generate" -H "Content-Type: application/json" -d "{\"prompt\": \"Write a haiku about AI\"}"
