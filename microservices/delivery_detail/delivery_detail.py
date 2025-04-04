@@ -56,17 +56,16 @@ def get_all_delivery_details():
             "error": str(e)
         }), 500
 
-# ✅ GET delivery surcharge by address
-@app.route("/delivery_detail/<string:deliveryAddress>")
-def get_delivery_surcharge(deliveryAddress):
-    delivery_detail = deliveryDetail.query.filter_by(deliveryAddress=deliveryAddress).first()
-    
+@app.route("/delivery_detail/<int:deliveryID>")
+def get_delivery_surcharge(deliveryID):
+    delivery_detail = deliveryDetail.query.get(deliveryID)
+
     if not delivery_detail:
         return jsonify({
             "code": 404,
-            "message": "Delivery address not found."
+            "message": "Delivery record not found."
         }), 404
-    
+
     return jsonify({
         "code": 200,
         "data": {

@@ -26,7 +26,6 @@ def find_by_medicationName(medicationName):
     # quantity = request.args.get("qty", default=1, type=int)
     available_meds = medicineInventory.query.filter_by(medicationName=medicationName).first()
 
-
     if available_meds:
         return jsonify(
         {
@@ -112,4 +111,4 @@ def reduce_quantity(medicationName):
 
 
 if __name__ == '__main__':
-    app.run(port=5100, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
