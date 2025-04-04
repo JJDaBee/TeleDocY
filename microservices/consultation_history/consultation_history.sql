@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `consultationHistory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `consultationHistory` (
-  `uuid` varchar(20) NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(20) NOT NULL,
   `nric` varchar(9) NOT NULL,
   `dateTime` datetime NOT NULL,
   `reasonForVisit` varchar(1000) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE `consultationHistory` (
   `diagnosis` varchar(1000) NOT NULL,
   `prescriptions` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`uuid`,`dateTime`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 INSERT INTO consultationHistory (uuid, nric, dateTime, reasonForVisit, doctorName, diagnosis, prescriptions) VALUES

@@ -26,6 +26,41 @@ class consultationHistory(db.Model):
     diagnosis=db.Column(db.String(1000), nullable=False)
     prescriptions=db.Column(db.String(1000), default=None)
 
+@app.route("/consultation_history", methods=["GET"])
+def get_all_consultation_records():
+    try:
+        all_records = consultationHistory.query.all()
+
+        if not all_records:
+            return jsonify({
+                "code": 404,
+                "message": "No consultation history records found."
+            }), 404
+
+        records_list = []
+        for record in all_records:
+            records_list.append({
+                "uuid": record.uuid,
+                "nric": record.nric,
+                "dateTime": record.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
+                "reasonForVisit": record.reasonForVisit,
+                "doctorName": record.doctorName,
+                "diagnosis": record.diagnosis,
+                "prescriptions": record.prescriptions
+            })
+
+        return jsonify({
+            "code": 200,
+            "data": records_list
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching consultation records.",
+            "error": str(e)
+        }), 500
+
 @app.route("/consultation_history/<string:uuid>")
 def find_by_uuid(uuid):
     # quantity = request.args.get("qty", default=1, type=int)
