@@ -1,5 +1,5 @@
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from fastapi import FastAPI, HTTPException # type: ignore
 from pydantic import BaseModel
 import requests
 import traceback
