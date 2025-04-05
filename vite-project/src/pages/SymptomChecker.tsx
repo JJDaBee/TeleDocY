@@ -86,17 +86,17 @@ const SymptomChecker = () => {
 
             {result && (
                 <div style={{ marginTop: '30px' }}>
-                    <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
                         <h3>AI Response:</h3>
                         <p>{result.ai_response}</p>
                     </div>
 
-                    <div style={{ background: '#f1f1f1', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
                         <h4>Patient Info:</h4>
                         <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.patient_info, null, 2)}</pre>
                     </div>
 
-                    <div style={{ background: '#f1f1f1', padding: '20px', borderRadius: '8px' }}>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px' }}>
                         <h4>Consultation History:</h4>
                         <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.consultation_history, null, 2)}</pre>
                     </div>
