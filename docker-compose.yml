@@ -82,16 +82,16 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
 
-    notification:
-        build:
-            context: ./microservices/notification
-            dockerfile: notification.Dockerfile
-        depends_on:
-            - mysql
-        ports:
-            - '5004:5000'
-        environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+    # notification:
+    #     build:
+    #         context: ./microservices/notification
+    #         dockerfile: notification.Dockerfile
+    #     depends_on:
+    #         - mysql
+    #     ports:
+    #         - '5004:5000'
+    #     environment:
+    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
     openai_service:
         build:
@@ -111,9 +111,9 @@ services:
             - openai_service
         ports:
             - '4000:4000'
-        environment:
-            - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
-            - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
+        # environment:
+        #     - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
+        #     - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
 
     # order_service:
     #     build:

@@ -16,7 +16,7 @@ app.add_middleware(
 
 # URLs of your existing microservices
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/patients"
-CONSULTATION_HISTORY_URL = "http://consultationhistory:5000/consultation_history"
+CONSULTATION_HISTORY_URL = "http://consultationhistory:5001/consultation_history"
 MINILM_TOKENIZER_URL = "http://host.docker.internal:4001/tokenize"
 
 
@@ -38,7 +38,7 @@ def check_symptoms(data: SymptomCheckRequest):
         print("👤 Patient NRIC:", patient_data.get("nric"))
         
         # Step 2: Fetch Consultation History
-        history_response = requests.get(f"{CONSULTATION_HISTORY_URL}/{patient_data['uuid']}")
+        history_response = requests.get(f"{CONSULTATION_HISTORY_URL}/{data.uuid}")
         print("✅ Consultation history API status code:", history_response.status_code)
         consultation_data = []
         if history_response.status_code == 200:
