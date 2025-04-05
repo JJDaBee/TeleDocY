@@ -2,18 +2,24 @@
 
 # frontend: port 5173
 # mysql: port 3307 DONE
-# postgres: port 5432
+# postgres_schedule: port 5433 DONE
+# postgres_doctor: port 5434 DONE
+
+# book consult COMPOSITE port:5100
+# settle post consult COMPOSITE port: 5200
+# symptom checker COMPOSITE port: 4000 DONE
+
 # dyte wrapper: port 5000
 # consultation_history: port 5001 DONE
 # medicine_inventory: port 5002 DONE
 # delivery_detail: port 5003 DONE
-# notification: port 5004
+# notification: port 5004 DONE
 # order: port 5005 DONE
-# schedule: port 5006
-# doctor: port 5007
-# symptom checker: port 4000
-# minilm : port 4001 (not exactly used, but might clash so just dont)
-# openai: port 4002
+# schedule: port 5006 DONE
+# doctor: port 5007 DONE
+
+# minilm : port 4001 (hosted on localhost on vanness laptop via port 4001)
+# openai: port 4002 DONE
 
 services:
     # gateway:
@@ -46,8 +52,48 @@ services:
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            # - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
             - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
+
+    postgres_schedule:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: schedule
+        ports:
+            - '5433:5432'
+        volumes:
+            - postgres_schedule_data:/var/lib/postgresql/data
+            - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
+
+    postgres_doctor:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: doctor
+        ports:
+            - '5434:5432'
+        volumes:
+            - postgres_doctor_data:/var/lib/postgresql/data
+            - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+
+    bookconsult:
+        build:
+            context: ./microservices/book_consult
+            dockerfile: book_consult.Dockerfile
+        ports:
+            - '5100:5100'
+        depends_on:
+            - mysql
+            - postgres_schedule
+            - postgres_doctor
+            - consultationhistory
+            - doctor
+            - schedule
 
     consultationhistory:
         build:
@@ -102,7 +148,7 @@ services:
         ports:
             - '4002:4002'
         env_file:
-            - .env  # this loads vanness' OPENAI_API_KEY from .env file
+            - .env # this loads vanness' OPENAI_API_KEY from .env file
 
     symptom_checker:
         build:
@@ -117,24 +163,6 @@ services:
         #     - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
         #     - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
 
-    # order_service:
-    #     build:
-    #     ...
-
-
-    # order_service:
-
-    # notification:
-    #     build:
-    #         context: ./microservices/notification
-    #         dockerfile: notification.Dockerfile
-    #     depends_on:
-    #         - mysql
-    #     ports:
-    #         - '5004:5004'
-    #     environment:
-    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
-
     order:
         build:
             context: ./microservices/order
@@ -146,53 +174,32 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
 
-    postgres:
-        image: postgres:17
-        restart: always
-        environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_DB: postgres
-        ports:
-            - '5433:5432'
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
-            - ./microservices/init.sql:/docker-entrypoint-initdb.d/00-init.sql
-            - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
-            - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
-
-        # networks:
-        #     - app-network
-
     schedule:
         build:
             context: ./microservices/schedule
             dockerfile: schedule.Dockerfile
         depends_on:
-            - postgres
+            - postgres_schedule
         ports:
             - '5006:5006'
         environment:
-            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
-        # networks:
-        #     - app-network
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_schedule:5432/schedule
 
     doctor:
         build:
             context: ./microservices/doctor
             dockerfile: doctor.Dockerfile
         depends_on:
-            - postgres
+            - postgres_doctor
         ports:
             - '5007:5007'
         environment:
-            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
-    #     networks:
-    #         - app-network
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_doctor:5432/doctor
 
 volumes:
     mysql_data:
-    postgres_data:
+    postgres_schedule_data:
+    postgres_doctor_data:
 
 networks:
     app-network:

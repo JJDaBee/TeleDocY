@@ -13,7 +13,7 @@ COPY book_consult.py /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5000
+EXPOSE 5100
 
 # Start Flask app
 CMD ["python", "book_consult.py"]

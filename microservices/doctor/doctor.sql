@@ -4,7 +4,7 @@ BEGIN;
 -- Create the doctor table
 DROP TABLE IF EXISTS public.doctor;
 
-CREATE TABLE IF NOT EXISTS doctor (
+CREATE TABLE IF NOT EXISTS public.doctor (
     doctorid UUID NOT NULL,
     gender VARCHAR(10) NOT NULL,
     dateofbirth DATE NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS doctor (
 );
 
 -- Insert sample data
-INSERT INTO doctor (
+INSERT INTO public.doctor (
     doctorid, gender, dateofbirth, email, phone, yearsofexperience,
     medicallicensenumber, doctorname, picture
 ) VALUES
