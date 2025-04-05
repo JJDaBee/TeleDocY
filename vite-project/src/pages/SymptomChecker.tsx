@@ -21,7 +21,7 @@ const SymptomChecker = () => {
         setResult(null);
 
         try {
-            const response = await axios.post('http://localhost:8000/check-symptoms', {
+            const response = await axios.post('http://localhost:4000/check-symptoms', {
                 uuid,
                 symptom_description: symptom,
             });
