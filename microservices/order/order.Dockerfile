@@ -6,14 +6,14 @@ WORKDIR /app
 
 # Copy app code
 COPY requirements.txt requirements.txt
-COPY order_service.py /app/
+COPY order.py /app/
 
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5600
+EXPOSE 5005
 
 # Start Flask app
-CMD ["python", "order_service.py"]
+CMD ["python", "order.py"]
