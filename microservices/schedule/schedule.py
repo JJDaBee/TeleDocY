@@ -18,6 +18,7 @@ class Schedule(db.Model):
 
     doctorname = db.Column(db.String(100), primary_key=True)
     next_available_time = db.Column(db.DateTime, nullable=True)
+    roomid = db.Column(db.String(20), nullable=False)
 
 # API Endpoint to Get First Available Doctor
 @app.route("/schedule", methods=['GET'])
@@ -31,14 +32,15 @@ def get_first_available_doctor():
 
     if available_doctor:
         # Set the doctor to be unavailable for the next 30 minutes
-        available_doctor.next_available_time = datetime.utcnow() + timedelta(minutes=30) # RMB TO CHANGE BACK TO 30 MINUTES!!
+        available_doctor.next_available_time = datetime.utcnow() + timedelta(minutes=30)
 
         db.session.commit()
 
         return jsonify({
             "code": 200,
             "data": {
-                "doctorName": available_doctor.doctorname
+                "doctorName": available_doctor.doctorname,
+                "roomid": available_doctor.roomid
             }
         }), 200
 
