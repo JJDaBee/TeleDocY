@@ -9,7 +9,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "microservices/medicine_inventory", "medicine_inventory.sql")
+# init_path = os.path.join(project_root, "microservices/medicine_inventory", "medicine_inventory.sql")
 
 class medicineInventory(db.Model):
     __tablename__ = "medicineInventory"
@@ -95,11 +95,11 @@ def reduce_quantity(medicationName):
 
     medicine.quantityLeft -= reduce_by
     db.session.commit()
-    result =subprocess.run([
-            "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
-            "mysqldump", "-u", "root", "-proot", "consultationHistory"
-        ], stdout=open(init_path, "w"))
-    print("mysqldump executed. Return code:", result.returncode)
+    # result =subprocess.run([
+    #         "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
+    #         "mysqldump", "-u", "root", "-proot", "consultationHistory"
+    #     ], stdout=open(init_path, "w"))
+    # print("mysqldump executed. Return code:", result.returncode)
     return jsonify({
         "code": 200,
         "message": f"{reduce_by} units deducted from '{medicationName}'.",
