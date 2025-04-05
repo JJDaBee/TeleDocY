@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from datetime import datetime
 import json
+from flask_cors import CORS #to enable react to run
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
@@ -123,3 +125,5 @@ def delete_order(orderID):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5005, debug=True)
+
+CORS(app)
