@@ -1,83 +1,99 @@
-#just to store notification logs w/ status
-
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import OperationalError
+# /app/main.py
 import os
-import subprocess
+import sqlite3
+import logging
+from flask import Flask, request, jsonify
+from smtplib import SMTP_SSL
+from email.mime.text import MIMEText
+from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@localhost:3306/notification') #rmb to change name
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
+DB_PATH = "notifications.db"
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_PASS = os.getenv("GMAIL_PASS")
 
-db = SQLAlchemy(app)
-project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "microservices/notification", "notification.sql")
+if not GMAIL_USER or not GMAIL_PASS:
+    logging.warning("GMAIL_USER or GMAIL_PASS not set in environment variables")
 
-class notification(db.Model):
-    __tablename__ = "notification"
-
-    uuid=db.Column(db.String(20), primary_key = True)
-    notificationLog=db.Column(db.String(1000),nullable=False)
-    dateTime=db.Column(db.DateTime,nullable=False)
-    status=db.Column(db.String(100),nullable=False)
-
-
-@app.route("/notification", methods=["POST"])
-def create_notificationrecord():
-    data = request.get_json()
-    uuid=data.get("uuid")
-    dateTime = data.get("dateTime")
-    notificationLog=data.get("notificationLog")
-    status=data.get("status")
-
-    new_notification = notification(
-        uuid=uuid,
-        dateTime=dateTime,
-        notificationLog=notificationLog,
-        status=status 
-    )
+def execute_sql_script(path):
     try:
-        # Add the new consultation to the session and commit to the database
-        db.session.add(new_notification)
-        db.session.commit()
-        result =subprocess.run([
-            "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
-            "mysqldump", "-u", "root", "-proot", "notification"
-        ], stdout=open(init_path, "w"))
-        print("mysqldump executed. Return code:", result.returncode)
-        return jsonify({
-            "code": 201,
-            "message": "Notification record created successfully.",
-            "data": {
-                "uuid" : new_notification.uuid,
-                "dateTime": new_notification.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                "notificationLog": new_notification.notificationLog,
-                "status": new_notification.status
-            }
-        }), 201
-
+        with sqlite3.connect(DB_PATH) as conn, open(path, 'r') as f:
+            conn.executescript(f.read())
+        logging.info("Executed SQL script successfully")
     except Exception as e:
-        db.session.rollback()
-        return jsonify({
-            "code": 500,
-            "message": "An error occurred while creating the consultation record.",
-            "error": str(e)
-        }), 500
-    
-@app.route("/notifications", methods=["GET"])
-def get_notifications():
-    notifications = notification.query.all()
-    return jsonify([
-        {
-            "uuid": n.uuid,
-            "dateTime": n.dateTime.strftime("%Y-%m-%d %H:%M:%S"),
-            "notificationLog": n.notificationLog,
-            "status": n.status
-        }
-        for n in notifications
-    ]), 200
+        logging.error(f"Failed to execute SQL script: {e}")
 
+def send_email(to_email, message):
+    logging.info(f"Sending email to {to_email}")
+    msg = MIMEText(message)
+    msg['Subject'] = "Notification"
+    msg['From'] = GMAIL_USER
+    msg['To'] = to_email
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5004, debug=True) 
+    try:
+        with SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(GMAIL_USER, GMAIL_PASS)
+            server.send_message(msg)
+        logging.info("Email sent successfully")
+    except Exception as e:
+        logging.error(f"Error sending email: {e}")
+        raise
+
+def log_notification(email, message):
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("INSERT INTO notifications (email, message) VALUES (?, ?)", (email, message))
+            conn.commit()
+        logging.info("Notification logged to DB")
+    except Exception as e:
+        logging.error(f"Error logging notification: {e}")
+        raise
+
+@app.route("/notification/notify", methods=["POST"])
+def notify():
+    logging.info("/notification/notify called")
+    data = request.get_json()
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Invalid JSON payload format"}), 400
+
+    email = data.get("email")
+    message = data.get("message")
+
+    if not email or not message:
+        logging.warning("Missing email or message in request")
+        return jsonify({"error": "Missing email or message"}), 400
+
+    try:
+        send_email(email, message)
+        log_notification(email, message)
+        return jsonify({"status": "sent"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/notification/logs", methods=["GET"])
+def get_logs():
+    logging.info("/notification/logs called")
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, email, message, timestamp FROM notifications ORDER BY timestamp DESC")
+            rows = cursor.fetchall()
+            logs = [
+                {"id": row[0], "email": row[1], "message": row[2], "timestamp": row[3]} for row in rows
+            ]
+        return jsonify(logs)
+    except Exception as e:
+        logging.error(f"Error fetching logs: {e}")
+        return jsonify({"error": "Failed to retrieve logs"}), 500
+
+if __name__ == "__main__":
+    logging.info("Starting notification service on port 5004")
+    execute_sql_script("notification.sql")
+    app.run(host="0.0.0.0", port=5004)
