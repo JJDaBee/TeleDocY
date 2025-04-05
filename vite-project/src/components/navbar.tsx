@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '16px 32px',
+                padding: '16px 100px 16px 32px',
                 backgroundColor: '#007BFF',
                 color: 'white',
                 margin: '0px'
@@ -23,6 +23,7 @@ const Navbar: React.FC = () => {
 
             <div style={{ display: 'flex', gap: '20px' }}>
                 <Link to="/" style={linkStyle}>Home</Link>
+                <Link to="/consultation" style={linkStyle}>Consultation</Link>
                 <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
                 <Link to="/symptom-checker" style={linkStyle}>Symptom Checker</Link>
                 <Link to="/login" style={linkStyle}>Login</Link>
