@@ -11,8 +11,7 @@
 # order: port 5005 DONE
 # schedule: port 5006
 # doctor: port 5007
-# symptom checker: port 4000
-# minilm : port 4001 (not exactly used, but might clash so just dont)
+# minilm: port 4001
 # openai: port 4002
 
 services:
