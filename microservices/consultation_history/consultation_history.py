@@ -11,7 +11,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
-init_path = os.path.join(project_root, "microservices/consultation_history", "consultation_history.sql")
+# init_path = os.path.join(project_root, "microservices/consultation_history", "consultation_history.sql")
 
 
 
@@ -118,11 +118,11 @@ def create_consultationrecord():
         db.session.add(new_consultation)
         db.session.commit()
 
-        result =subprocess.run([
-            "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
-            "mysqldump", "-u", "root", "-proot", "consultationHistory"
-        ], stdout=open(init_path, "w"))
-        print("mysqldump executed. Return code:", result.returncode)
+        # result =subprocess.run([
+        #     "docker", "exec", "-i", "teledocy-mysql-1",  # use your container name
+        #     "mysqldump", "-u", "root", "-proot", "consultationHistory"
+        # ], stdout=open(init_path, "w"))
+        # print("mysqldump executed. Return code:", result.returncode)
         return jsonify({
             "code": 201,
             "message": "Consultation record created successfully.",
