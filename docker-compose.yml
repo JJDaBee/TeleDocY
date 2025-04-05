@@ -81,17 +81,18 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
 
-
-    # notification:
-    #     build:
-    #         context: ./microservices/notification
-    #         dockerfile: notification.Dockerfile
-    #     depends_on:
-    #         - mysql
-    #     ports:
-    #         - '5004:5004'
-    #     environment:
-    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+    notification:
+        build:
+            context: ./microservices/notification
+            dockerfile: Dockerfile
+        depends_on:
+            - mysql
+        ports:
+            - '5004:5004'
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+        env_file:
+            - .env
 
     openai_service:
         build:
