@@ -119,7 +119,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
 const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px',
-    margin: '10px 0',
+    margin: '0 auto',
     border: '1px solid #ccc',
     borderRadius: '8px',
     fontSize: '1rem',
