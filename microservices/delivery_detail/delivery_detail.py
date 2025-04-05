@@ -17,10 +17,9 @@ class deliveryDetail(db.Model):
 
     deliveryID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     deliveryAddress = db.Column(db.String(1000), nullable=False)
-    medication = db.Column(db.String(1000), nullable=False)
-    deliverySurcharge = db.Column(db.Integer, nullable=False)
+    medication = db.Column(db.JSON, nullable=False)
     deliveryDate = db.Column(db.DateTime, nullable=False)
-    uuid = db.Column(db.String(36), nullable=False)  # UUID string
+    uuid = db.Column(db.String(20), nullable=False)
 
 # ✅ GET all delivery records
 @app.route("/delivery_detail", methods=["GET"])
@@ -39,9 +38,8 @@ def get_all_delivery_details():
                 "deliveryID": d.deliveryID,
                 "deliveryAddress": d.deliveryAddress,
                 "medication": d.medication,
-                "deliverySurcharge": d.deliverySurcharge,
                 "deliveryDate": d.deliveryDate.strftime("%Y-%m-%d %H:%M:%S"),
-                "uuid": d.uuid
+                "uuid": d.uuid,
             })
 
         return jsonify({
@@ -56,22 +54,22 @@ def get_all_delivery_details():
             "error": str(e)
         }), 500
 
-@app.route("/delivery_detail/<int:deliveryID>")
-def get_delivery_surcharge(deliveryID):
-    delivery_detail = deliveryDetail.query.get(deliveryID)
-
-    if not delivery_detail:
-        return jsonify({
-            "code": 404,
-            "message": "Delivery record not found."
-        }), 404
-
-    return jsonify({
-        "code": 200,
-        "data": {
-            "deliverySurcharge": delivery_detail.deliverySurcharge,
-        }
-    }), 200
+#@app.route("/delivery_detail/<int:deliveryID>")
+#def get_delivery_surcharge(deliveryID):
+#    delivery_detail = deliveryDetail.query.get(deliveryID)
+#
+#    if not delivery_detail:
+#        return jsonify({
+#            "code": 404,
+#            "message": "Delivery record not found."
+#        }), 404
+#
+#    return jsonify({
+#        "code": 200,
+#        "data": {
+#            "deliverySurcharge": delivery_detail.deliverySurcharge,
+#        }
+#    }), 200
 
 # ✅ POST a new delivery record
 @app.route("/delivery_detail", methods=["POST"])
@@ -81,11 +79,10 @@ def create_delivery_detail():
 
         deliveryAddress = data.get("deliveryAddress")
         medication = data.get("medication")
-        deliverySurcharge = data.get("deliverySurcharge")
         deliveryDate = data.get("deliveryDate")  # Optional
-        uuid = data.get("uuid")  # Required
+        uuid = data.get("uuid")
 
-        if not (deliveryAddress and medication and deliverySurcharge is not None and uuid):
+        if not (deliveryAddress and medication and uuid):
             return jsonify({
                 "code": 400,
                 "message": "Missing required fields in request."
@@ -100,7 +97,6 @@ def create_delivery_detail():
         new_delivery = deliveryDetail(
             deliveryAddress=deliveryAddress,
             medication=medication,
-            deliverySurcharge=deliverySurcharge,
             deliveryDate=deliveryDate,
             uuid=uuid
         )
@@ -115,9 +111,8 @@ def create_delivery_detail():
                 "deliveryID": new_delivery.deliveryID,
                 "deliveryAddress": new_delivery.deliveryAddress,
                 "medication": new_delivery.medication,
-                "deliverySurcharge": new_delivery.deliverySurcharge,
                 "deliveryDate": new_delivery.deliveryDate.strftime("%Y-%m-%d %H:%M:%S"),
-                "uuid": new_delivery.uuid
+                "uuid": new_delivery.uuid,
             }
         }), 201
 
