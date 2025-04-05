@@ -2,13 +2,14 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import os
 import subprocess
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@mysql:3306/medicineInventory')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
-project_root = os.path.dirname(os.path.abspath(__file__))
+# project_root = os.path.dirname(os.path.abspath(__file__))
 # init_path = os.path.join(project_root, "microservices/medicine_inventory", "medicine_inventory.sql")
 
 class medicineInventory(db.Model):
@@ -111,4 +112,4 @@ def reduce_quantity(medicationName):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)
