@@ -13,7 +13,7 @@ COPY medicine_inventory.py /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5000
+EXPOSE 5002
 
 # Start Flask app
 CMD ["python", "medicine_inventory.py"]
