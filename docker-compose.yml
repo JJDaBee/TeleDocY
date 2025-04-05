@@ -11,6 +11,8 @@
 # order_service: port 5005
 # schedule: port 5006
 # doctor: port 5007
+# minilm: port 4001
+# openai: port 4002
 
 services:
     # gateway:
