@@ -1,0 +1,2 @@
+CREATE DATABASE doctor;
+CREATE DATABASE schedule;
