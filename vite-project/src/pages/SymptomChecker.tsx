@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
+import Navbar from '../components/navbar';
+import Footer from '../components/footer';
 
 const SymptomChecker = () => {
     const [uuid, setUuid] = useState('');
@@ -35,75 +37,114 @@ const SymptomChecker = () => {
     };
 
     return (
-        <div style={{ padding: '40px', maxWidth: '700px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
-            <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>Symptom Checker</h1>
+        <>
+            <Navbar />
+            <section
+                style={{
+                    padding: '60px 20px',
+                    background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
+                    minHeight: '100vh',
+                }}
+            >
+                <div style={{ minWidth: '100vw', maxWidth: '100vw', margin: 'auto' }}>
+                    <h1 style={{ marginBottom: '30px', textAlign: 'center', fontSize: '2.5rem', color: '#333' }}>
+                        🩺 Symptom Checker
+                    </h1>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <input
-                    type="text"
-                    placeholder="Enter patient UUID..."
-                    value={uuid}
-                    onChange={(e) => setUuid(e.target.value)}
-                    style={{
-                        padding: '12px',
-                        fontSize: '16px',
-                        borderRadius: '5px',
-                        border: '1px solid #ccc',
-                    }}
-                />
-                <input
-                    type="text"
-                    placeholder="Describe your symptoms..."
-                    value={symptom}
-                    onChange={(e) => setSymptom(e.target.value)}
-                    style={{
-                        padding: '12px',
-                        fontSize: '16px',
-                        borderRadius: '5px',
-                        border: '1px solid #ccc',
-                    }}
-                />
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                        padding: '12px',
-                        fontSize: '16px',
-                        borderRadius: '5px',
-                        backgroundColor: '#007bff',
-                        color: '#fff',
-                        border: 'none',
-                        cursor: 'pointer',
-                    }}
-                >
-                    {loading ? 'Checking...' : 'Submit'}
-                </button>
-            </form>
+                    <form
+                        onSubmit={handleSubmit}
+                        style={{
+                            backgroundColor: '#fff',
+                            padding: '30px',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px',
+                            margin: '0 auto',
+                            width: '80%',
 
-            {error && (
-                <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>{error}</p>
-            )}
+                        }}
+                    >
+                        <input
+                            type="text"
+                            placeholder="Enter patient UUID..."
+                            value={uuid}
+                            onChange={(e) => setUuid(e.target.value)}
+                            style={inputStyle}
+                        />
+                        <textarea
+                            placeholder="Describe your symptoms..."
+                            value={symptom}
+                            onChange={(e) => setSymptom(e.target.value)}
+                            rows={4}
+                            style={{ ...inputStyle, resize: 'vertical' }}
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                                padding: '14px',
+                                fontSize: '1rem',
+                                borderRadius: '6px',
+                                backgroundColor: '#007bff',
+                                color: '#fff',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.3s',
+                            }}
+                        >
+                            {loading ? 'Checking...' : 'Submit'}
+                        </button>
+                    </form>
 
-            {result && (
-                <div style={{ marginTop: '30px' }}>
-                    <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                        <h3>AI Response:</h3>
-                        <p>{result.ai_response}</p>
-                    </div>
+                    {error && (
+                        <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>{error}</p>
+                    )}
 
-                    <div style={{ background: '#f1f1f1', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                        <h4>Patient Info:</h4>
-                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.patient_info, null, 2)}</pre>
-                    </div>
+                    {result && (
+                        <div style={{ marginTop: '40px' }}>
+                            <div style={cardStyle}>
+                                <h3 style={cardTitle}>AI Response</h3>
+                                <p>{result.ai_response}</p>
+                            </div>
 
-                    <div style={{ background: '#f1f1f1', padding: '20px', borderRadius: '8px' }}>
-                        <h4>Consultation History:</h4>
-                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.consultation_history, null, 2)}</pre>
-                    </div>
+                            <div style={cardStyle}>
+                                <h4 style={cardTitle}>Patient Info</h4>
+                                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
+                                    {JSON.stringify(result.patient_info, null, 2)}
+                                </pre>
+                            </div>
+
+                            </div>
+                    )}
                 </div>
-            )}
-        </div>
+            </section>
+            <Footer />
+        </>
     );
+};
+
+const inputStyle: React.CSSProperties = {
+    padding: '14px',
+    fontSize: '1rem',
+    borderRadius: '6px',
+    border: '1px solid #ccc',
+};
+
+const cardStyle: React.CSSProperties = {
+    background: '#f9f9f9',
+    padding: '20px',
+    borderRadius: '10px',
+    marginBottom: '25px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+};
+
+const cardTitle: React.CSSProperties = {
+    marginBottom: '12px',
+    fontSize: '1.2rem',
+    color: '#333',
+    fontWeight: 600,
 };
 
 export default SymptomChecker;
