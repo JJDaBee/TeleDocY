@@ -3,17 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
 import os
 import subprocess
+from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:@mysql:3306/consultationHistory')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URI','mysql+mysqlconnector://root:root@mysql:3306/consultationHistory')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
-project_root = os.path.dirname(os.path.abspath(__file__))
-# init_path = os.path.join(project_root, "microservices/consultation_history", "consultation_history.sql")
-
-
 
 class consultationHistory(db.Model):
     __tablename__ = "consultationHistory"
@@ -98,7 +95,16 @@ def create_consultationrecord():
     data = request.get_json()
     uuid= data.get("uuid")
     nric = data.get("nric")
-    dateTime = data.get("dateTime")
+    dateTime_str = data.get("dateTime")
+    try:
+        dateTime = datetime.strptime(dateTime_str, "%Y-%m-%d %H:%M:%S")
+    except Exception as e:
+        return jsonify({
+            "code": 400,
+            "message": "Invalid dateTime format. Expected 'YYYY-MM-DD HH:MM:SS'.",
+            "error": str(e)
+        }), 400
+
     reasonForVisit = data.get("reasonForVisit")
     doctorName = data.get("doctorName")
     diagnosis = data.get("diagnosis")
@@ -146,5 +152,5 @@ def create_consultationrecord():
         }), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
 

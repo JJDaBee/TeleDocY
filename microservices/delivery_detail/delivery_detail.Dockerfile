@@ -13,7 +13,7 @@ COPY delivery_detail.py /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5000
+EXPOSE 5003
 
 # Start Flask app
 CMD ["python", "delivery_detail.py"]

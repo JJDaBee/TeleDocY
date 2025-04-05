@@ -1,14 +1,14 @@
 # version: '3.8'
 
 # frontend: port 5173
-# mysql: port 3306
+# mysql: port 3307 DONE
 # postgres: port 5432
 # dyte wrapper: port 5000
-# consultation_history: port 5001
-# medicine_inventory: port 5002
-# delivery_detail: port 5003
+# consultation_history: port 5001 DONE
+# medicine_inventory: port 5002 DONE
+# delivery_detail: port 5003 DONE
 # notification: port 5004
-# order_service: port 5005
+# order: port 5005 DONE
 # schedule: port 5006
 # doctor: port 5007
 # symptom checker: port 4000
@@ -39,7 +39,6 @@ services:
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: consultationHistory
         ports:
             - '3307:3306'
         volumes:
@@ -47,8 +46,8 @@ services:
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
-            # - ./microservices/order_service/order_service.sql:/docker-entrypoint-initdb.d/order_service.sql
+            # - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
 
     consultationhistory:
         build:
@@ -57,7 +56,7 @@ services:
         depends_on:
             - mysql
         ports:
-            - '5001:5000'
+            - '5001:5001'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/consultationHistory
 
@@ -68,7 +67,7 @@ services:
         depends_on:
             - mysql
         ports:
-            - '5002:5000'
+            - '5002:5002'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/medicineInventory
 
@@ -79,7 +78,7 @@ services:
         depends_on:
             - mysql
         ports:
-            - '5003:5000'
+            - '5003:5003'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
 
@@ -112,17 +111,38 @@ services:
             - openai_service
         ports:
             - '4000:4000'
+        environment:
+            - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
+            - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
 
     # order_service:
     #     build:
-    #         context: ./microservices/order_service
-    #         dockerfile: order_service.Dockerfile
+    #     ...
+
+
+    # order_service:
+
+    # notification:
+    #     build:
+    #         context: ./microservices/notification
+    #         dockerfile: notification.Dockerfile
     #     depends_on:
     #         - mysql
     #     ports:
-    #         - '5005:5000'
+    #         - '5004:5004'
     #     environment:
-    # - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
+    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+
+    order:
+        build:
+            context: ./microservices/order
+            dockerfile: order.Dockerfile
+        depends_on:
+            - mysql
+        ports:
+            - '5005:5005'
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
 
     # postgres:
     #     image: postgres:17
