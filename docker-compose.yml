@@ -11,8 +11,7 @@
 # order: port 5005 DONE
 # schedule: port 5006
 # doctor: port 5007
-# symptom checker: port 4000
-# minilm : port 4001 (not exactly used, but might clash so just dont)
+# minilm: port 4001
 # openai: port 4002
 
 services:
@@ -82,16 +81,17 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
 
-    notification:
-        build:
-            context: ./microservices/notification
-            dockerfile: notification.Dockerfile
-        depends_on:
-            - mysql
-        ports:
-            - '5004:5000'
-        environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+
+    # notification:
+    #     build:
+    #         context: ./microservices/notification
+    #         dockerfile: notification.Dockerfile
+    #     depends_on:
+    #         - mysql
+    #     ports:
+    #         - '5004:5004'
+    #     environment:
+    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
     openai_service:
         build:
@@ -111,9 +111,9 @@ services:
             - openai_service
         ports:
             - '4000:4000'
-        environment:
-            - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
-            - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
+        # environment:
+        #     - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
+        #     - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
 
     # order_service:
     #     build:

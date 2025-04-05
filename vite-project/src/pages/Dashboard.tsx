@@ -91,7 +91,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         try {
             const payload = {
                 uuid: form.patientID,
-                prescriptionDate: form.date + ' 00:00:00',
                 medicines: medications.map(m => ({
                     medication: m.medication,
                     dosage: m.dosage,
