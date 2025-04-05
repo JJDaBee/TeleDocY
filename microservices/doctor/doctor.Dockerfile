@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy app code
 COPY requirements.txt requirements.txt
-COPY notification.py /app/
+COPY doctor.py /app/
 
 
 # Install dependencies

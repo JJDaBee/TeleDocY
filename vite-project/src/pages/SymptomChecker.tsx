@@ -21,7 +21,7 @@ const SymptomChecker = () => {
         setResult(null);
 
         try {
-            const response = await axios.post('http://localhost:8000/check-symptoms', {
+            const response = await axios.post('http://localhost:4000/check-symptoms', {
                 uuid,
                 symptom_description: symptom,
             });
@@ -35,44 +35,71 @@ const SymptomChecker = () => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h1>Symptom Checker</h1>
-            <form onSubmit={handleSubmit}>
+        <div style={{ padding: '40px', maxWidth: '700px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+            <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>Symptom Checker</h1>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <input
                     type="text"
                     placeholder="Enter patient UUID..."
                     value={uuid}
                     onChange={(e) => setUuid(e.target.value)}
-                    style={{ padding: '10px', width: '300px', marginBottom: '10px', display: 'block' }}
+                    style={{
+                        padding: '12px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #ccc',
+                    }}
                 />
                 <input
                     type="text"
                     placeholder="Describe your symptoms..."
                     value={symptom}
                     onChange={(e) => setSymptom(e.target.value)}
-                    style={{ padding: '10px', width: '300px' }}
+                    style={{
+                        padding: '12px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #ccc',
+                    }}
                 />
                 <button
                     type="submit"
-                    style={{ padding: '10px 20px', marginLeft: '10px' }}
                     disabled={loading}
+                    style={{
+                        padding: '12px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        backgroundColor: '#007bff',
+                        color: '#fff',
+                        border: 'none',
+                        cursor: 'pointer',
+                    }}
                 >
                     {loading ? 'Checking...' : 'Submit'}
                 </button>
             </form>
 
-            {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+            {error && (
+                <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>{error}</p>
+            )}
 
             {result && (
-                <div style={{ marginTop: '20px' }}>
-                    <h3>AI Response:</h3>
-                    <p>{result.ai_response}</p>
+                <div style={{ marginTop: '30px' }}>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                        <h3>AI Response:</h3>
+                        <p>{result.ai_response}</p>
+                    </div>
 
-                    <h4>Patient Info:</h4>
-                    <pre>{JSON.stringify(result.patient_info, null, 2)}</pre>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                        <h4>Patient Info:</h4>
+                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.patient_info, null, 2)}</pre>
+                    </div>
 
-                    <h4>Consultation History:</h4>
-                    <pre>{JSON.stringify(result.consultation_history, null, 2)}</pre>
+                    <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '8px' }}>
+                        <h4>Consultation History:</h4>
+                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(result.consultation_history, null, 2)}</pre>
+                    </div>
                 </div>
             )}
         </div>

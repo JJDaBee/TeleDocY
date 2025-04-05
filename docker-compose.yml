@@ -1,141 +1,195 @@
-version: '3.8'
+# version: '3.8'
+
+# frontend: port 5173
+# mysql: port 3307 DONE
+# postgres: port 5432
+# dyte wrapper: port 5000
+# consultation_history: port 5001 DONE
+# medicine_inventory: port 5002 DONE
+# delivery_detail: port 5003 DONE
+# notification: port 5004
+# order: port 5005 DONE
+# schedule: port 5006
+# doctor: port 5007
+# symptom checker: port 4000
+# minilm : port 4001 (not exactly used, but might clash so just dont)
+# openai: port 4002
 
 services:
-    gateway:
-        container_name: teledocy-gateway-1
-        build: ./gateway
-        ports:
-            - '4000:4000'
-        networks:
-            - app-network
+    # gateway:
+    #     container_name: teledocy-gateway-1
+    #     build: ./gateway
+    #     ports:
+    #         - '4000:4000'
+    #     networks:
+    #         - app-network
+    # frontend:
+    #     build:
+    #         context: ./vite-project
+    #         dockerfile: Dockerfile
+    #     ports:
+    #         - '5173:5173'
+    #     container_name: vite-frontend
+    #     networks:
+    #         - app-network
 
-    frontend:
-        container_name: teledocy-frontend-1
-        build: ./frontend
-        ports:
-            - '5173:5173'
-        depends_on:
-            - gateway
-        environment:
-            - VITE_API_URL=http://localhost:4000
-        networks:
-            - app-network
     #FOR SQL
     mysql:
         image: mysql:8.0
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: consultationHistory
         ports:
-            - "3307:3306"
+            - '3307:3306'
         volumes:
             - mysql_data:/var/lib/mysql
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            # - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
 
     consultationhistory:
         build:
-            context: .
-            dockerfile: ./microservices/consultation_history/consultation_history.Dockerfile  
+            context: ./microservices/consultation_history
+            dockerfile: consultation_history.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5000:5000"
+            - '5001:5001'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/consultationHistory
-    
+
     medicine_inventory:
         build:
-            context: .
-            dockerfile: ./microservices/medicine_inventory/medicine_inventory.Dockerfile  
+            context: ./microservices/medicine_inventory
+            dockerfile: medicine_inventory.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5100:5000"
+            - '5002:5002'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/medicineInventory
 
     delivery_detail:
         build:
-            context: .
-            dockerfile: ./microservices/delivery_detail/delivery_detail.Dockerfile  
+            context: ./microservices/delivery_detail
+            dockerfile: delivery_detail.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5200:5000"
+            - '5003:5003'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
-    
-    notification:
+
+    # notification:
+    #     build:
+    #         context: ./microservices/notification
+    #         dockerfile: notification.Dockerfile
+    #     depends_on:
+    #         - mysql
+    #     ports:
+    #         - '5004:5000'
+    #     environment:
+    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+
+    openai_service:
         build:
-            context: .
-            dockerfile: ./microservices/notification/notification.Dockerfile  
-        depends_on:
-            - mysql
+            context: ./microservices/openai_service
+            dockerfile: Dockerfile
         ports:
-            - "5300:5000"
-        environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+            - '4002:4002'
+        env_file:
+            - .env  # this loads vanness' OPENAI_API_KEY from .env file
+
+    symptom_checker:
+        build:
+            context: ./microservices/symptom_checker
+            dockerfile: Dockerfile
+        depends_on:
+            - consultationhistory
+            - openai_service
+        ports:
+            - '4000:4000'
+        # environment:
+        #     - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
+        #     - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
+
+    # order_service:
+    #     build:
+    #     ...
+
+
+    # order_service:
+
+    # notification:
+    #     build:
+    #         context: ./microservices/notification
+    #         dockerfile: notification.Dockerfile
+    #     depends_on:
+    #         - mysql
+    #     ports:
+    #         - '5004:5004'
+    #     environment:
+    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
 
     order:
         build:
-            context: .
-            dockerfile: ./microservices/order_service/order_service.Dockerfile  
+            context: ./microservices/order
+            dockerfile: order.Dockerfile
         depends_on:
             - mysql
         ports:
-            - "5600:5000"
+            - '5005:5005'
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
 
-    postgres:
-        image: postgres:17
-        restart: always
-        environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_DB: schedule
-        ports:
-            - "5432:5432"
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
-            - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
-            - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+    # postgres:
+    #     image: postgres:17
+    #     restart: always
+    #     environment:
+    #         POSTGRES_USER: postgres
+    #         POSTGRES_PASSWORD: postgres
+    #         POSTGRES_DB: schedule
+    #     ports:
+    #         - '5432:5432'
+    #     volumes:
+    #         - postgres_data:/var/lib/postgresql/data
+    #         - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
+    #         - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
 
-        networks:
-            - app-network
+    #     networks:
+    #         - app-network
 
-    schedule:
-        build:
-            context: .
-            dockerfile: ./microservices/schedule/schedule.Dockerfile
-        depends_on:
-            - postgres
-        ports:
-            - "5400:5000"
-        environment:
-            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
-        networks:
-            - app-network
+    # schedule:
+    #     build:
+    #         context: ./microservices/schedule
+    #         dockerfile: schedule.Dockerfile
+    #     depends_on:
+    #         - postgres
+    #     ports:
+    #         - '5006:5000'
+    #     environment:
+    #         - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
+    #     networks:
+    #         - app-network
 
-    doctor:
-        build:
-            context: .
-            dockerfile: ./microservices/doctor/doctor.Dockerfile
-        depends_on:
-            - postgres
-        ports:
-            - "5500:5000"
-        environment:
-            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
-        networks:
-            - app-network
-    
+    # doctor:
+    #     build:
+    #         context: ./microservices/doctor
+    #         dockerfile: doctor.Dockerfile
+    #     depends_on:
+    #         - postgres
+    #     ports:
+    #         - '5007:5000'
+    #     environment:
+    #         - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
+    #     networks:
+    #         - app-network
+
 volumes:
-  mysql_data:
+    mysql_data:
+    postgres_data:
 
 networks:
     app-network:
