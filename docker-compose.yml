@@ -38,7 +38,6 @@ services:
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: consultationHistory
         ports:
             - '3307:3306'
         volumes:
