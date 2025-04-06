@@ -4,6 +4,7 @@
 # mysql: port 3307 DONE
 # postgres_schedule: port 5433 DONE
 # postgres_doctor: port 5434 DONE
+# postgres_consult: port 5435 DONE
 
 # book consult COMPOSITE port:5100
 # settle post consult COMPOSITE port: 5200
@@ -17,6 +18,7 @@
 # order: port 5005 DONE
 # schedule: port 5006 DONE
 # doctor: port 5007 DONE
+# consult: port 5008 DONE
 # payment: port 5009
 
 # minilm : port 4001 (hosted on localhost on vanness laptop via port 4001)
@@ -99,6 +101,19 @@ services:
         volumes:
             - postgres_doctor_data:/var/lib/postgresql/data
             - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+
+    postgres_consult:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: consult
+        ports:
+            - '5435:5432'
+        volumes:
+            - postgres_consult_data:/var/lib/postgresql/data
+            - ./microservices/consult/consult.sql:/docker-entrypoint-initdb.d/consult.sql
 
     bookconsult:
         build:
@@ -215,7 +230,7 @@ services:
             - '5007:5007'
         environment:
             - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_doctor:5432/doctor
-    
+
     payment:
         build:
             context: ./microservices/payment
@@ -227,10 +242,22 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/payment
 
+    consult:
+        build:
+            context: ./microservices/consult
+            dockerfile: consult.Dockerfile
+        depends_on:
+            - postgres_consult
+        ports:
+            - '5008:5008'
+        environment:
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_consult:5432/consult
+
 volumes:
     mysql_data:
     postgres_schedule_data:
     postgres_doctor_data:
+    postgres_consult_data:
 
 networks:
     app-network:
