@@ -17,7 +17,7 @@ class deliveryDetail(db.Model):
 
     deliveryID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     deliveryAddress = db.Column(db.String(1000), nullable=False)
-    medication = db.Column(db.JSON, nullable=False)
+    prescriptions = db.Column(db.JSON, nullable=False)
     deliveryDate = db.Column(db.DateTime, nullable=False)
     uuid = db.Column(db.String(20), nullable=False)
 
@@ -37,7 +37,7 @@ def get_all_delivery_details():
             result.append({
                 "deliveryID": d.deliveryID,
                 "deliveryAddress": d.deliveryAddress,
-                "medication": d.medication,
+                "prescriptions": d.prescriptions,
                 "deliveryDate": d.deliveryDate.strftime("%Y-%m-%d %H:%M:%S"),
                 "uuid": d.uuid,
             })
@@ -78,11 +78,11 @@ def create_delivery_detail():
         data = request.get_json()
 
         deliveryAddress = data.get("deliveryAddress")
-        medication = data.get("medication")
+        prescriptions = data.get("prescriptions")
         deliveryDate = data.get("deliveryDate")  # Optional
         uuid = data.get("uuid")
 
-        if not (deliveryAddress and medication and uuid):
+        if not (deliveryAddress and prescriptions and uuid):
             return jsonify({
                 "code": 400,
                 "message": "Missing required fields in request."
@@ -96,7 +96,7 @@ def create_delivery_detail():
 
         new_delivery = deliveryDetail(
             deliveryAddress=deliveryAddress,
-            medication=medication,
+            prescriptions=prescriptions,
             deliveryDate=deliveryDate,
             uuid=uuid
         )
@@ -110,7 +110,7 @@ def create_delivery_detail():
             "data": {
                 "deliveryID": new_delivery.deliveryID,
                 "deliveryAddress": new_delivery.deliveryAddress,
-                "medication": new_delivery.medication,
+                "prescriptions": new_delivery.prescriptions,
                 "deliveryDate": new_delivery.deliveryDate.strftime("%Y-%m-%d %H:%M:%S"),
                 "uuid": new_delivery.uuid,
             }
@@ -121,6 +121,34 @@ def create_delivery_detail():
         return jsonify({
             "code": 500,
             "message": "An error occurred while creating the delivery record.",
+            "error": str(e)
+        }), 500
+    
+@app.route("/delivery_detail/<int:deliveryID>", methods=["GET"])
+def get_delivery_by_id(deliveryID):
+    try:
+        delivery = deliveryDetail.query.get(deliveryID)
+        if not delivery:
+            return jsonify({
+                "code": 404,
+                "message": f"Delivery with ID {deliveryID} not found."
+            }), 404
+
+        return jsonify({
+            "code": 200,
+            "data": {
+                "deliveryID": delivery.deliveryID,
+                "deliveryAddress": delivery.deliveryAddress,
+                "prescriptions": delivery.prescriptions,
+                "deliveryDate": delivery.deliveryDate.strftime("%Y-%m-%d %H:%M:%S"),
+                "uuid": delivery.uuid
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching delivery details.",
             "error": str(e)
         }), 500
 
