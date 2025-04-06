@@ -4,52 +4,46 @@ import Footer from '../components/footer';
 
 const Consultation: React.FC = () => {
     const [symptom, setSymptom] = useState('');
-    const participantName = 'Alice'; // Replace with user context if needed
+    const participantName = 'Alice'; // Replace with user context if needed (patient name)
 
     const handleConsult = async () => {
         if (!symptom.trim()) {
             alert('Please describe your symptom before joining.');
             return;
         }
-
+    
         try {
-            // TODO: Post to symptom microservice
-            /*
-            await fetch('http://localhost:YOUR_MICROSERVICE/symptom', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    patient: participantName,
-                    symptom,
-                    timestamp: new Date().toISOString(),
-                }),
-            });
-            */
-
-
-            /*don't touch */
-            const res = await fetch('http://localhost:5000/create-token', {
+            // 🧠 Step 1: Send symptom and patient UUID to book_consult
+            const res = await fetch('http://localhost:5100/book_consult', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ participantName }),
+                body: JSON.stringify({
+                    uuid: 'uuid-1234', // TODO: Replace with real patient UUID if needed
+                    reasonForVisit: symptom,
+                }),
             });
+    
             if (!res.ok) {
-                throw new Error('Failed to create token');
+                throw new Error('Failed to book consultation');
             }
-
-            const { authToken } = await res.json();
-
-
-            const meetingURL = `/meeting?authToken=${authToken}&symptom=${encodeURIComponent(symptom)}`;
-            window.open(meetingURL, '_blank');
+    
+            const data = await res.json();
+    
+            const dyteToken = data.dyte_token;
+            const doctorName = data.doctor_profile?.name || 'Assigned Doctor';
+            const doctorImage = data.doctor_profile?.picture || '';
+    
+            // 🔁 Redirect to waiting screen (NOT /meeting directly!)
+            const meetingURL = `/waiting?authToken=${dyteToken}`;
+            window.location.href = meetingURL;
         } catch (error) {
             console.error('❌ Error:', error);
             alert('Unable to join the consultation. Please try again.');
         }
     };
-
+    
     return (
         <>
             <Navbar />

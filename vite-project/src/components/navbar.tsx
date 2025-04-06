@@ -9,10 +9,10 @@ const Navbar: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '16px 100px 16px 32px',
+                padding: '25px 180px 16px 32px',
                 backgroundColor: '#007BFF',
                 color: 'white',
-                margin: '0px'
+                margin: '0px',
             }}
         >
             <h2 style={{ margin: 0 }}>
