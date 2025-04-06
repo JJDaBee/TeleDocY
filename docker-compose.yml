@@ -140,6 +140,21 @@ services:
             - consultationhistory
             - medicine_inventory
 
+    settle_post_consult:
+        build:
+            context: ./microservices/settle_post_consult
+            dockerfile: settle_post_consult.Dockerfile
+        ports:
+            - '5200:5200'
+        depends_on:
+            - order
+            - consultationhistory
+            - medicine_inventory
+            - delivery_detail
+            - payment
+            - notification
+            - mysql
+
     consultationhistory:
         build:
             context: ./microservices/consultation_history
