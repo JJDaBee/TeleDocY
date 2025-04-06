@@ -19,6 +19,7 @@
 # schedule: port 5006 DONE
 # doctor: port 5007 DONE
 # consult: port 5008 DONE
+# payment: port 5009
 
 # minilm : port 4001 (hosted on localhost on vanness laptop via port 4001)
 # openai: port 4002 DONE
@@ -67,6 +68,7 @@ services:
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
             - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
             - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/payment/payment.sql:/docker-entrypoint-initdb.d/payment.sql
 
         healthcheck:
             test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
@@ -228,6 +230,17 @@ services:
             - '5007:5007'
         environment:
             - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_doctor:5432/doctor
+
+    payment:
+        build:
+            context: ./microservices/payment
+            dockerfile: payment.Dockerfile
+        depends_on:
+            - mysql
+        ports:
+            - '5009:5009'
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/payment
 
     consult:
         build:
