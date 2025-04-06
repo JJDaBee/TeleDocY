@@ -33,17 +33,17 @@ services:
     #         - '4000:4000'
     #     networks:
     #         - app-network
-    frontend:
-        build:
-            context: ./vite-project
-            dockerfile: Dockerfile
-        ports:
-            - '5173:5173'
-        volumes:
-            - ./frontend:/app
-            - /app/node_modules
-        environment:
-            - NODE_ENV=development
+    # frontend:
+    #     build:
+    #         context: ./vite-project
+    #         dockerfile: Dockerfile
+    #     ports:
+    #         - '5173:5173'
+    #     volumes:
+    #         - ./frontend:/app
+    #         - /app/node_modules
+    #     environment:
+    #         - NODE_ENV=development
 
     dyte-wrapper:
         build:
