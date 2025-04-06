@@ -128,17 +128,8 @@ services:
             - consultationhistory
             - doctor
             - schedule
-
-    settle_post_consult:
-        build:
-            context: ./microservices/settle_post_consult
-            dockerfile: Dockerfile
-        ports:
-            - "5200:5200"
-        depends_on:
-            - order
-            - consultationhistory
-            - medicine_inventory
+            - consult
+            - dyte-wrapper
 
     settle_post_consult:
         build:
@@ -154,6 +145,7 @@ services:
             - payment
             - notification
             - mysql
+            - openai_service
 
     consultationhistory:
         build:

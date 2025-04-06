@@ -24,7 +24,7 @@ class Payment(db.Model):
     paymentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uuid = db.Column(db.String(36), nullable=False)
     medicine_inventory_list = db.Column(db.JSON, nullable=False)
-    prescription = db.Column(db.JSON, nullable=False)
+    prescriptions = db.Column(db.JSON, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     datetime = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -34,7 +34,7 @@ class Payment(db.Model):
             "uuid": self.uuid,
             "medicine_inventory_list": self.medicine_inventory_list,
             "datetime": self.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-            "prescription": self.prescription,
+            "prescriptions": self.prescriptions,
             "amount": self.amount
         }
 
@@ -43,21 +43,22 @@ class Payment(db.Model):
 def create_payment():
     data = request.get_json()
     uuid = data.get("uuid")
-    med_list = data.get("medicine_inventory_list")
-    prescription = data.get("prescription")
+    med_list = data.get("medicine_inventory_list")  # still [{"medicineName": ..., "quantity": ..., "price": ...}]
+    prescriptions = data.get("prescriptions")  # now list of objects: [{"medicineName": ..., "dosage": ..., "quantity": ...}]
 
-    if not uuid or not med_list or prescription is None:
+    if not uuid or not med_list or not isinstance(prescriptions, list):
         return jsonify({
             "code": 400,
-            "message": "Missing 'uuid', 'medicine_inventory_list', or 'prescription'."
+            "message": "Missing or invalid 'uuid', 'medicine_inventory_list', or 'prescriptions'."
         }), 400
 
     try:
         amount = sum(item["price"] * item["quantity"] for item in med_list)
+
         new_payment = Payment(
             uuid=uuid,
-            medicine_inventory_list=med_list,
-            prescription=prescription,
+            medicine_inventory_list=med_list,  # stored as JSON
+            prescriptions=prescriptions,         # stored as JSON
             amount=amount
         )
 
@@ -91,6 +92,28 @@ def get_all_payments():
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching payments.",
+            "error": str(e)
+        }), 500
+    
+@app.route("/payments/<int:payment_id>", methods=["GET"])
+def get_payment_by_id(payment_id):
+    try:
+        payment = Payment.query.get(payment_id)
+        if not payment:
+            return jsonify({
+                "code": 404,
+                "message": f"No payment found with ID {payment_id}"
+            }), 404
+
+        return jsonify({
+            "code": 200,
+            "data": payment.to_dict()
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the payment.",
             "error": str(e)
         }), 500
 
