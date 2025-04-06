@@ -16,7 +16,8 @@ const Consultation: React.FC = () => {
         sessionStorage.setItem('uuid', uuid);
 
         //  Go to loader
-        window.location.href = '/loader';
+        window.open(`/loader`, '_blank');
+
     };
 
     return (
