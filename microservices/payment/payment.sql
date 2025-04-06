@@ -1,15 +1,13 @@
-DROP DATABASE IF EXISTS payment;
-CREATE DATABASE IF NOT EXISTS payment;
-USE payment;
+DROP DATABASE IF EXISTS paymentdb;
+CREATE DATABASE IF NOT EXISTS paymentdb;
 
-CREATE TABLE IF NOT EXISTS payment (
+USE paymentdb;
+
+CREATE TABLE IF NOT EXISTS payments (
     paymentID INT AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(36) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
+    medicine_inventory_list JSON NOT NULL,
+    prescription JSON NOT NULL,
+    amount FLOAT NOT NULL,
     datetime DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
--- Dummy data
-INSERT INTO payment (uuid, amount) VALUES
-('uuid-1234', 45.50),
-('uuid-5678', 80.00);

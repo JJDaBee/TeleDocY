@@ -251,7 +251,7 @@ services:
         ports:
             - '5009:5009'
         environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/payment
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/paymentdb
 
     consult:
         build:
