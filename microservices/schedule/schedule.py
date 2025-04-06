@@ -42,7 +42,7 @@ def get_first_available_doctor():
 
     if available_doctor:
         # Step 3: Block the doctor for 30 minutes
-        available_doctor.next_available_time = now + timedelta(seconds=30)
+        available_doctor.next_available_time = now + timedelta(seconds=60)
         db.session.commit()
 
         return jsonify({

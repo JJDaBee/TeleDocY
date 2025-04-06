@@ -61,6 +61,27 @@ def create_consult():
     except Exception as e:
         db.session.rollback()
         return jsonify({"code": 500, "message": "Error inserting consult", "error": str(e)}), 500
+    
+@app.route("/consults/doctor/<string:doctorname>", methods=["GET"])
+def get_consults_by_doctor(doctorname):
+    try:
+        records = Consult.query.filter_by(doctorname=doctorname).all()
+        if not records:
+            return jsonify({
+                "code": 404,
+                "message": f"No consults found for doctor: {doctorname}"
+            }), 404
+
+        return jsonify({
+            "code": 200,
+            "data": [record.to_dict() for record in records]
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "Error fetching consults by doctor.",
+            "error": str(e)
+        }), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5008, debug=True)

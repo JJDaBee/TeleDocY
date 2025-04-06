@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -8,14 +9,16 @@ CONSULT_HISTORY_URL_BASE = "http://consultationhistory:5001/consultation_history
 SCHEDULE_URL_BASE = "http://schedule:5006/schedule"
 DOCTOR_URL_BASE = "http://doctor:5007/doctor"
 DYTE_WRAPPER_URL = "http://dyte-wrapper:5000/create-token"
+CONSULT_POST_URL = "http://consult:5008/consults"
 
 @app.route("/book_consult", methods=["POST"])
 def book_consult():
     data = request.get_json()
     uuid = data.get("uuid")
+    reason_for_visit = data.get("reasonForVisit")
 
-    if not uuid:
-        return jsonify({"code": 400, "message": "Missing 'uuid' in request."}), 400
+    if not uuid or not reason_for_visit:
+        return jsonify({"code": 400, "message": "Missing 'uuid' or 'reasonForVisit' in request."}), 400
 
     try:
         # Step 1: Patient API
@@ -47,7 +50,7 @@ def book_consult():
             return jsonify({"code": 502, "message": "Failed to fetch doctor profile."}), 502
         doctor_profile = doctor_response.json().get("data", {})
 
-        # ✅ Step 5: Dyte wrapper to generate auth token
+        # Step 5: Dyte wrapper
         participant_name = patient_data.get("name", "Patient")
         dyte_response = requests.post(DYTE_WRAPPER_URL, json={
             "participantName": participant_name,
@@ -55,13 +58,23 @@ def book_consult():
         }, timeout=5)
 
         if dyte_response.status_code != 200:
-            return jsonify({
-                "code": 502,
-                "message": "Failed to generate Dyte auth token.",
-                "details": dyte_response.text
-            }), 502
+            return jsonify({"code": 502, "message": "Failed to generate Dyte auth token.", "details": dyte_response.text}), 502
 
         dyte_token = dyte_response.json().get("authToken")
+
+        # Step 6: Post to consult microservice
+        consult_payload = {
+            "firstname": participant_name,
+            "datetime": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "doctorname": doctor_name,
+            "roomid": meeting_id,
+            "symptom": reason_for_visit,
+            "medical_history": patient_data.get("medicalHistory", "")
+        }
+
+        consult_response = requests.post(CONSULT_POST_URL, json=consult_payload, timeout=5)
+        if consult_response.status_code != 201:
+            return jsonify({"code": 502, "message": "Failed to post consultation record.", "details": consult_response.text}), 502
 
         return jsonify({
             "code": 200,
@@ -74,11 +87,7 @@ def book_consult():
         }), 200
 
     except requests.RequestException as e:
-        return jsonify({
-            "code": 500,
-            "message": "Error during service orchestration.",
-            "error": str(e)
-        }), 500
+        return jsonify({"code": 500, "message": "Error during service orchestration.", "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5100, debug=True)
