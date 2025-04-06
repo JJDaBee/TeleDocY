@@ -147,6 +147,16 @@ services:
             - mysql
             - openai_service
 
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"     # AMQP
+            - "15672:15672"   # RabbitMQ management UI
+        environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
+        
     consultationhistory:
         build:
             context: ./microservices/consultation_history
@@ -185,8 +195,8 @@ services:
             context: ./microservices/notification
             dockerfile: Dockerfile
         depends_on:
-            mysql:
-                condition: service_healthy
+            - rabbitmq
+            - mysql
         ports:
             - '5004:5004'
         environment:
