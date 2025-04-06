@@ -8,7 +8,7 @@ from flask_cors import CORS #to enable react to run
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'DB_URI', 'mysql+mysqlconnector://root:root@mysql:3306/order'
+    'DB_URI', 'mysql+mysqlconnector://root:root@mysql:3306/orderdb'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
@@ -16,18 +16,18 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 db = SQLAlchemy(app)
 
 class Order(db.Model):
-    __tablename__ = 'order'
+    __tablename__ = 'orders'
     
     orderID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uuid = db.Column(db.String(36), nullable=False)
-    medicines = db.Column(db.JSON, nullable=False)
+    prescriptions = db.Column(db.JSON, nullable=False)
     prescriptionDate = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
             "orderID": self.orderID,
             "uuid": self.uuid,
-            "medicines": self.medicines,
+            "prescriptions": self.prescriptions,
             "prescriptionDate": self.prescriptionDate.strftime("%Y-%m-%d %H:%M:%S")
         }
 
@@ -45,16 +45,16 @@ def get_all_orders():
 def create_order():
     data = request.get_json()
     uuid = data.get("uuid")
-    medicines = data.get("medicines")
+    prescriptions = data.get("prescriptions")
 
-    if not uuid or not medicines:
+    if not uuid or not prescriptions:
         return jsonify({
             "code": 400,
-            "message": "Missing 'uuid' or 'medicines'."
+            "message": "Missing 'uuid' or 'prescriptions'."
         }), 400
 
     try:
-        new_order = Order(uuid=uuid, medicines=medicines)
+        new_order = Order(uuid=uuid, prescriptions=prescriptions)
         db.session.add(new_order)
         db.session.commit()
 
