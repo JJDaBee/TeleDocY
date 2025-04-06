@@ -33,15 +33,17 @@ services:
     #         - '4000:4000'
     #     networks:
     #         - app-network
-    # frontend:
-    #     build:
-    #         context: ./vite-project
-    #         dockerfile: Dockerfile
-    #     ports:
-    #         - '5173:5173'
-    #     container_name: vite-frontend
-    #     networks:
-    #         - app-network
+    frontend:
+        build:
+            context: ./vite-project
+            dockerfile: Dockerfile
+        ports:
+            - '5173:5173'
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        environment:
+            - NODE_ENV=development
 
     dyte-wrapper:
         build:
@@ -178,12 +180,12 @@ services:
         image: rabbitmq:3-management
         container_name: rabbitmq
         ports:
-            - "5672:5672"     # AMQP
-            - "15672:15672"   # RabbitMQ management UI
+            - '5672:5672' # AMQP
+            - '15672:15672' # RabbitMQ management UI
         environment:
             RABBITMQ_DEFAULT_USER: guest
             RABBITMQ_DEFAULT_PASS: guest
-        
+
     consultationhistory:
         build:
             context: ./microservices/consultation_history

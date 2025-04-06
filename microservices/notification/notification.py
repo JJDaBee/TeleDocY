@@ -29,7 +29,7 @@ def wait_for_mysql():
         except Error as e:
             print(f"⏳ Waiting for MySQL: {e}")
             retries -= 1
-            time.sleep(3)
+            time.sleep(10)
     else:
         print("❌ MySQL never came online.")
         exit(1)
