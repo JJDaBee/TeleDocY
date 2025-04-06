@@ -18,6 +18,12 @@ type LoginPageProps = {
 const accounts: User[] = [
     { username: 'p1', password: '111', role: 'patient' },
     { username: 'd1', password: '111', role: 'doctor' },
+    {
+        username: "Goh Zhi Hao",
+        password: "111",
+        role: "doctor"
+      },
+      
 ];
 
 const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {

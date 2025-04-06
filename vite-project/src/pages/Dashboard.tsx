@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 
 // 🧾 Types
-
 type User = {
     username: string;
     password: string;
@@ -15,49 +14,77 @@ type DashboardProps = {
     user: User | null;
 };
 
-type Consultation = {
-    patientName: string;
-    userInput: string;
-};
-
 type MedicationRow = {
     medication: string;
     dosage: string;
     quantity: number;
 };
 
-// 📄 Mock consultations
-const sampleConsultations: Consultation[] = [
-    { patientName: 'John Doe', userInput: 'Headache and nausea' },
-    { patientName: 'Jane Smith', userInput: 'Fever and cough' },
-];
-
-const doctorName = 'Dr. Alice';
+const doctorName = 'Ng Xuan Yi';
 
 const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const navigate = useNavigate();
+
+    // 👇 Popup states
     const [showPopup, setShowPopup] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
-    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-    const [historyMap, setHistoryMap] = useState<Record<string, any[]>>({});
 
+    // 👇 Consultation records from backend
+    const [consults, setConsults] = useState<any[]>([]);
 
+    // 👇 Popup form and meds
     const [form, setForm] = useState({
         patientID: '',
         nric: '',
         date: '',
-        diagnosis: '', // ✅ Added
-
+        diagnosis: '',
     });
 
     const [medications, setMedications] = useState<MedicationRow[]>([
         { medication: '', dosage: '', quantity: 1 },
     ]);
 
+    useEffect(() => {
+        const fetchConsults = async () => {
+            try {
+                const encodedDoctorName = encodeURIComponent(doctorName);
+                const res = await fetch(`http://localhost:5008/consults/doctor/${encodedDoctorName}`);
+                const data = await res.json();
+                setConsults(data.data);
+            } catch (err) {
+                console.error('❌ Failed to fetch consults:', err);
+            }
+        };
+        fetchConsults();
+    }, []);
+    
+       
+
+    // 🔒 Restrict access to doctor role
     if (!user || user.role !== 'doctor') {
         return <h2>Access denied</h2>;
     }
 
+    // 🧠 Room join logic using roomid from backend
+    const handleJoinRoom = async (roomid: string) => {
+        try {
+            const res = await fetch('http://localhost:5000/create-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    participantName: doctorName,
+                    meetingId: roomid,
+                }),
+            });
+
+            const data = await res.json();
+            window.open(`/meeting?authToken=${data.authToken}`, '_blank');
+        } catch (err) {
+            console.error('❌ Failed to join room:', err);
+        }
+    };
+
+    // Popup controls
     const openPopup = (patientName: string) => {
         setSelectedPatient(patientName);
         setShowPopup(true);
@@ -84,41 +111,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         setMedications([...medications, { medication: '', dosage: '', quantity: 1 }]);
     };
 
-
-
-    //PATIENT HISTORY MEDICAL
-    const toggleHistory = async (idx: number, patientName: string) => {
-        if (expandedIndex === idx) {
-            setExpandedIndex(null); // collapse
-        } else {
-            if (!historyMap[patientName]) {
-                try {
-                    const res = await fetch(`http://host.docker.internal:5008/consultation-history/${patientName}`);
-                    const data = await res.json();
-                    setHistoryMap(prev => ({ ...prev, [patientName]: data.data }));
-                } catch (err) {
-                    console.error('❌ Failed to fetch history:', err);
-                    setHistoryMap(prev => ({ ...prev, [patientName]: [] }));
-                }
-            }
-            setExpandedIndex(idx); // expand
-        }
-    };
-
-
-
+    // 💊 Submit prescription form to post-consult composite
     const handleSubmit = async () => {
         const payload = {
             uuid: form.patientID,
             nric: form.nric,
-            dateTime: new Date().toISOString(), // or use form.date if needed
-            reasonForVisit: selectedPatient || 'General Consultation', //take from gpt; KIV might delete
+            dateTime: new Date().toISOString(),
+            reasonForVisit: selectedPatient || 'General Consultation',
             doctorName: doctorName,
             diagnosis: form.diagnosis,
             prescriptions: medications.map(m => `${m.medication} ${m.dosage} x${m.quantity}`).join(', ')
         };
-
-        console.log('📤 Submitting to post-consult composite service:', payload);
 
         try {
             const response = await fetch('http://host.docker.internal:5200/post-consult', {
@@ -141,34 +144,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         }
     };
 
-
     return (
         <>
             <Navbar />
-            <section
-                style={{
-                    padding: '60px 60px',
-                    background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
-                    minHeight: '100vh',
-                    width: '100vw'
-
-                }}
-            >
-                <div style={{ width: '900px', margin: 'auto' }}>
+            <section style={{ padding: '60px', background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)', minHeight: '100vh', width: '100vw' }}>
+                <div style={{ width: '90%', maxWidth: '1000px', margin: 'auto' }}>
                     <h2 style={{ fontSize: '2rem', marginBottom: '30px', color: '#333' }}>
                         Consultation History
                     </h2>
 
-                    {/* 🆕 Optional: Add header for better accessibility */}
-                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'black' ,width: '90vw'}}>
+                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'black' }}>
                         <span>Patient</span>
                         <span>Medical History</span>
                         <span>Symptoms</span>
                         <span>Actions</span>
                     </div>
-                    </div>
 
-                    {sampleConsultations.map((consult, idx) => (
+                    {consults.map((consult, idx) => (
                         <div
                             key={idx}
                             style={{
@@ -180,57 +172,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                 color: 'black',
                             }}
                         >
-                            <div><strong>{consult.patientName}</strong></div>
-
-                            {/* Always-shown history column */}
-                            <div style={{ paddingRight: '10px' }}>
-                                {historyMap[consult.patientName]?.length > 0 ? (
-                                    <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                                        {historyMap[consult.patientName].map((entry, i) => (
-                                            <li key={i} style={{ marginBottom: '8px' }}>
-                                                <strong>Date:</strong> {entry.datetime}<br />
-                                                <strong>Diagnosis:</strong> {entry.diagnosis}<br />
-                                                <strong>Prescription:</strong> {entry.prescriptions}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p style={{ fontStyle: 'italic', color: '#777' }}>No history</p>
-                                )}
-                            </div>
-
-                            <div>{consult.userInput}</div>
-
+                            <div><strong>{consult.firstname}</strong></div>
+                            <div>{consult.medicalhistory || <i style={{ color: '#777' }}>None</i>}</div>
+                            <div>{consult.symptom}</div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <button
-                                    onClick={async () => {
-                                        const res = await fetch('http://localhost:5000/create-token', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ participantName: doctorName }),
-                                        });
-                                        const data = await res.json();
-                                        window.open(`/meeting?authToken=${data.authToken}`, '_blank');
-                                    }}
-                                    style={{
-                                        backgroundColor: 'red',
-                                        color: 'white',
-                                        padding: '8px 12px',
-                                        borderRadius: '20px',
-                                        border: 'none',
-                                    }}
+                                    onClick={() => handleJoinRoom(consult.roomid)}
+                                    style={{ backgroundColor: 'red', color: 'white', padding: '8px 12px', borderRadius: '20px', border: 'none' }}
                                 >
                                     Join Room
                                 </button>
                                 <button
-                                    onClick={() => openPopup(consult.patientName)}
-                                    style={{
-                                        backgroundColor: 'red',
-                                        color: 'white',
-                                        padding: '8px 12px',
-                                        borderRadius: '20px',
-                                        border: 'none',
-                                    }}
+                                    onClick={() => openPopup(consult.firstname)}
+                                    style={{ backgroundColor: 'red', color: 'white', padding: '8px 12px', borderRadius: '20px', border: 'none' }}
                                 >
                                     Create Order
                                 </button>
@@ -238,10 +192,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                         </div>
                     ))}
 
-
                     {showPopup && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                            <div style={{ backgroundColor: 'white', padding: 30, borderRadius: 12, width: '100%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto' }}>
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+                            justifyContent: 'center', alignItems: 'center', zIndex: 1000
+                        }}>
+                            <div style={{
+                                backgroundColor: 'white', padding: 30, borderRadius: 12,
+                                width: '100%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto'
+                            }}>
                                 <h3 style={{ color: '#333', textAlign: 'center', marginBottom: '20px' }}>
                                     Create Prescription for {selectedPatient}
                                 </h3>
@@ -252,15 +212,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                 <input name="diagnosis" placeholder="Diagnosis" type="text" onChange={handleFormChange} value={form.diagnosis} style={inputStyle} />
 
                                 <hr style={{ margin: '20px 0' }} />
-
                                 <h4 style={{ marginBottom: '10px' }}>Medications</h4>
+
                                 <table style={{ width: '100%', marginBottom: '20px', borderCollapse: 'collapse' }}>
                                     <thead>
                                         <tr>
                                             <th style={tableHeaderStyle}>Medication</th>
                                             <th style={tableHeaderStyle}>Quantity</th>
                                             <th style={tableHeaderStyle}>Dosage</th>
-
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -283,12 +242,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                             </div>
                         </div>
                     )}
+                </div>
             </section>
             <Footer />
         </>
     );
 };
 
+// 🎨 Styles
 const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '10px',

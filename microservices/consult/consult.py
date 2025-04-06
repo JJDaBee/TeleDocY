@@ -2,11 +2,16 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
     "DB_URI", "postgresql+psycopg2://postgres:postgres@postgres_consult:5432/consult"
 )
+CORS(app)  # 🔥 This fixes the CORS error
+
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
