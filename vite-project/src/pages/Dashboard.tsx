@@ -38,6 +38,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
+    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const [historyMap, setHistoryMap] = useState<Record<string, any[]>>({});
+
 
     const [form, setForm] = useState({
         patientID: '',
@@ -62,7 +65,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
     const closePopup = () => {
         setShowPopup(false);
-        setForm({ patientID: '', nric: '', date: '' });
+        setForm({ patientID: '', nric: '', date: '', diagnosis: '' });
         setMedications([{ medication: '', dosage: '', quantity: 1 }]);
     };
 
@@ -81,136 +84,160 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         setMedications([...medications, { medication: '', dosage: '', quantity: 1 }]);
     };
 
+
+
+    //PATIENT HISTORY MEDICAL
+    const toggleHistory = async (idx: number, patientName: string) => {
+        if (expandedIndex === idx) {
+            setExpandedIndex(null); // collapse
+        } else {
+            if (!historyMap[patientName]) {
+                try {
+                    const res = await fetch(`http://host.docker.internal:5008/consultation-history/${patientName}`);
+                    const data = await res.json();
+                    setHistoryMap(prev => ({ ...prev, [patientName]: data.data }));
+                } catch (err) {
+                    console.error('❌ Failed to fetch history:', err);
+                    setHistoryMap(prev => ({ ...prev, [patientName]: [] }));
+                }
+            }
+            setExpandedIndex(idx); // expand
+        }
+    };
+
+
+
     const handleSubmit = async () => {
-        const prescription = {
-            ...form,
-            patientName: selectedPatient,
-            medications,
+        const payload = {
+            uuid: form.patientID,
+            nric: form.nric,
+            dateTime: new Date().toISOString(), // or use form.date if needed
+            reasonForVisit: selectedPatient || 'General Consultation', //take from gpt; KIV might delete
+            doctorName: doctorName,
+            diagnosis: form.diagnosis,
+            prescriptions: medications.map(m => `${m.medication} ${m.dosage} x${m.quantity}`).join(', ')
         };
 
-        console.log('📤 Submitting to Order Service:', prescription);
-    
-      try {
-    // --- 1. POST to Order Service ---
-    const orderPayload = {
-      uuid: form.patientID,
-      medicines: medications.map(m => ({
-        medication: m.medication,
-        dosage: m.dosage,
-        numberOfPills: m.quantity,
-      }))
+        console.log('📤 Submitting to post-consult composite service:', payload);
+
+        try {
+            const response = await fetch('http://host.docker.internal:5200/post-consult', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+                alert('✅ Composite POST to post-consult successful!');
+                closePopup();
+            } else {
+                const err = await response.json();
+                console.error('❌ Error from post-consult:', err);
+                alert('⚠️ Failed to submit composite POST.');
+            }
+        } catch (error) {
+            console.error('❌ Network error posting to post-consult:', error);
+            alert('❌ Failed to connect to post-consult service.');
+        }
     };
 
-    const orderResponse = await fetch('http://host.docker.internal:5005/orders', { /*change next time */
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload),
-    });
 
-    // --- 2. POST to Consult History ---
-    const historyPayload = {
-      uuid: form.patientID,
-      nric: form.nric,
-      dateTime: new Date().toISOString(), // or use form.date + time
-      reasonForVisit: selectedPatient || 'General Consultation',
-      doctorName: doctorName, // from context/props
-      diagnosis: form.diagnosis,
-      prescriptions: medications.map(m => `${m.medication} ${m.dosage} x${m.quantity}`).join(', ')
-    };
+    return (
+        <>
+            <Navbar />
+            <section
+                style={{
+                    padding: '60px 60px',
+                    background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
+                    minHeight: '100vh',
+                    width: '100vw'
 
-    const historyResponse = await fetch('http://host.docker.internal:5600/consultation-history', { /*change next time*/
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(historyPayload),
-    });
+                }}
+            >
+                <div style={{ width: '900px', margin: 'auto' }}>
+                    <h2 style={{ fontSize: '2rem', marginBottom: '30px', color: '#333' }}>
+                        Consultation History
+                    </h2>
 
-    // ✅ All went well
-    if (orderResponse.ok && historyResponse.ok) {
-      alert('✅ Order & History submitted successfully!');
-      closePopup();
-    } else {
-      alert('⚠️ Something went wrong submitting one of the services.');
-    }
-  } catch (err) {
-    console.error('❌ Error submitting:', err);
-    alert('Error submitting data to backend.');
-  }
-};
-    
-        return (
-            <>
-                <Navbar />
-                <section
-                    style={{
-                        padding: '60px 20px',
-                        background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
-                        minHeight: '100vh',
-                        width: '100vw'
-                    }}
-                >
-                    <div style={{ maxWidth: '900px', margin: 'auto' }}>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '30px', color: '#333' }}>
-                            Consultation History
-                        </h2>
-
-                        {/* 🆕 Optional: Add header for better accessibility */}
-                        <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'black'}}>
-                            <span>Patient</span>
-                            <span>Symptoms</span>
-                            <span>Actions</span>
-                        </div>
-
-                        {sampleConsultations.map((consult, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid black', padding: '10px 0' , color:'black'}}>
-                                <div>
-                                    <strong>{consult.patientName}</strong> &nbsp;&nbsp;
-                                    {consult.userInput}
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <button
-                                        onClick={async () => {
-                                            const participantName = doctorName;
-                                            try {
-                                                const res = await fetch('http://localhost:5000/create-token', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ participantName }),
-                                                });
-
-                                                let authToken = '';
-                                                if (res.ok) {
-                                                    const data = await res.json();
-                                                    authToken = data.authToken;
-                                                    console.log('Received token from backend:', authToken);
-                                                }
-
-                                                const meetingURL = `/meeting?authToken=${authToken}`;
-                                                window.open(meetingURL, '_blank');
-                                            } catch (error) {
-                                                console.error('Error fetching token:', error);
-                                                alert('Unable to join the consultation. Please try again.');
-                                            }
-                                        }}
-                                        style={{
-                                            backgroundColor: 'red',
-                                            color: 'white',
-                                            padding: '8px 12px',
-                                            borderRadius: '20px',
-                                            border: 'none',
-                                        }}
-                                    >
-                                        Join Room
-                                    </button>
-                                    <button
-                                        onClick={() => openPopup(consult.patientName)}
-                                        style={{ backgroundColor: 'red', color: 'white', padding: '8px 12px', borderRadius: '20px', border: 'none' }}
-                                    >
-                                        Create Order
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                    {/* 🆕 Optional: Add header for better accessibility */}
+                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'black' ,width: '90vw'}}>
+                        <span>Patient</span>
+                        <span>Medical History</span>
+                        <span>Symptoms</span>
+                        <span>Actions</span>
                     </div>
+                    </div>
+
+                    {sampleConsultations.map((consult, idx) => (
+                        <div
+                            key={idx}
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 2fr 1fr 1fr',
+                                alignItems: 'start',
+                                borderBottom: '2px solid black',
+                                padding: '10px 0',
+                                color: 'black',
+                            }}
+                        >
+                            <div><strong>{consult.patientName}</strong></div>
+
+                            {/* Always-shown history column */}
+                            <div style={{ paddingRight: '10px' }}>
+                                {historyMap[consult.patientName]?.length > 0 ? (
+                                    <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                                        {historyMap[consult.patientName].map((entry, i) => (
+                                            <li key={i} style={{ marginBottom: '8px' }}>
+                                                <strong>Date:</strong> {entry.datetime}<br />
+                                                <strong>Diagnosis:</strong> {entry.diagnosis}<br />
+                                                <strong>Prescription:</strong> {entry.prescriptions}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p style={{ fontStyle: 'italic', color: '#777' }}>No history</p>
+                                )}
+                            </div>
+
+                            <div>{consult.userInput}</div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <button
+                                    onClick={async () => {
+                                        const res = await fetch('http://localhost:5000/create-token', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ participantName: doctorName }),
+                                        });
+                                        const data = await res.json();
+                                        window.open(`/meeting?authToken=${data.authToken}`, '_blank');
+                                    }}
+                                    style={{
+                                        backgroundColor: 'red',
+                                        color: 'white',
+                                        padding: '8px 12px',
+                                        borderRadius: '20px',
+                                        border: 'none',
+                                    }}
+                                >
+                                    Join Room
+                                </button>
+                                <button
+                                    onClick={() => openPopup(consult.patientName)}
+                                    style={{
+                                        backgroundColor: 'red',
+                                        color: 'white',
+                                        padding: '8px 12px',
+                                        borderRadius: '20px',
+                                        border: 'none',
+                                    }}
+                                >
+                                    Create Order
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
 
                     {showPopup && (
                         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
@@ -222,7 +249,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                 <input name="patientID" placeholder="Patient ID" onChange={handleFormChange} value={form.patientID} style={inputStyle} />
                                 <input name="nric" placeholder="NRIC" onChange={handleFormChange} value={form.nric} style={inputStyle} />
                                 <input name="date" type="date" onChange={handleFormChange} value={form.date} style={inputStyle} />
-                                <input name="diagnosis" type="string" onChange={handleFormChange} value={form.diagnosis} style={inputStyle}} />
+                                <input name="diagnosis" placeholder="Diagnosis" type="text" onChange={handleFormChange} value={form.diagnosis} style={inputStyle} />
 
                                 <hr style={{ margin: '20px 0' }} />
 
@@ -242,7 +269,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                                 <td><input value={med.medication} onChange={e => handleMedChange(i, 'medication', e.target.value)} style={inputStyle} /></td>
                                                 <td><input type="number" value={med.quantity} onChange={e => handleMedChange(i, 'quantity', e.target.value)} style={inputStyle} /></td>
                                                 <td><input value={med.dosage} onChange={e => handleMedChange(i, 'dosage', e.target.value)} style={inputStyle} /></td>
-                                                </tr>
+                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
@@ -256,26 +283,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                             </div>
                         </div>
                     )}
-                </section>
-                <Footer />
-            </>
-        );
-    };
+            </section>
+            <Footer />
+        </>
+    );
+};
 
-    const inputStyle: React.CSSProperties = {
-        width: '100%',
-        padding: '10px',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        fontSize: '1rem',
-        boxSizing: 'border-box',
-    };
+const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '10px',
+    borderRadius: '6px',
+    border: '1px solid #ccc',
+    fontSize: '1rem',
+    boxSizing: 'border-box',
+};
 
-    const tableHeaderStyle: React.CSSProperties = {
-        textAlign: 'left',
-        paddingBottom: '8px',
-        color: 'black',
-        borderBottom: '1px solid #ccc',
-    };
+const tableHeaderStyle: React.CSSProperties = {
+    textAlign: 'left',
+    paddingBottom: '8px',
+    color: 'black',
+    borderBottom: '1px solid #ccc',
+};
 
-    export default Dashboard;
+export default Dashboard;
