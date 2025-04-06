@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
@@ -9,6 +9,16 @@ const SymptomChecker = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [result, setResult] = useState<any>(null);
+
+    useEffect(() => {
+        const storedUser = sessionStorage.getItem('loggedInUser');
+        if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+            if (parsed?.uuid) {
+                setUuid(parsed.uuid);
+            }
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,10 +33,13 @@ const SymptomChecker = () => {
         setResult(null);
 
         try {
-            const response = await axios.post('http://localhost:4000/check-symptoms', {
-                uuid,
-                symptom_description: symptom,
-            });
+            const response = await axios.post(
+                'http://localhost:4000/check-symptoms',
+                {
+                    uuid,
+                    symptom_description: symptom,
+                }
+            );
             setResult(response.data);
         } catch (err: any) {
             setError('Something went wrong. Please try again.');
@@ -46,8 +59,21 @@ const SymptomChecker = () => {
                     minHeight: '100vh',
                 }}
             >
-                <div style={{ minWidth: '100vw', maxWidth: '100vw', margin: 'auto' }}>
-                    <h1 style={{ marginBottom: '30px', textAlign: 'center', fontSize: '2.5rem', color: '#333' }}>
+                <div
+                    style={{
+                        minWidth: '100vw',
+                        maxWidth: '100vw',
+                        margin: 'auto',
+                    }}
+                >
+                    <h1
+                        style={{
+                            marginBottom: '30px',
+                            textAlign: 'center',
+                            fontSize: '2.5rem',
+                            color: '#333',
+                        }}
+                    >
                         🩺 Symptom Checker
                     </h1>
 
@@ -63,7 +89,6 @@ const SymptomChecker = () => {
                             gap: '20px',
                             margin: '0 auto',
                             width: '80%',
-
                         }}
                     >
                         <input
@@ -99,7 +124,15 @@ const SymptomChecker = () => {
                     </form>
 
                     {error && (
-                        <p style={{ color: 'red', marginTop: '20px', textAlign: 'center' }}>{error}</p>
+                        <p
+                            style={{
+                                color: 'red',
+                                marginTop: '20px',
+                                textAlign: 'center',
+                            }}
+                        >
+                            {error}
+                        </p>
                     )}
 
                     {result && (
@@ -111,12 +144,20 @@ const SymptomChecker = () => {
 
                             <div style={cardStyle}>
                                 <h4 style={cardTitle}>Patient Info</h4>
-                                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
-                                    {JSON.stringify(result.patient_info, null, 2)}
+                                <pre
+                                    style={{
+                                        whiteSpace: 'pre-wrap',
+                                        fontSize: '0.95rem',
+                                    }}
+                                >
+                                    {JSON.stringify(
+                                        result.patient_info,
+                                        null,
+                                        2
+                                    )}
                                 </pre>
                             </div>
-
-                            </div>
+                        </div>
                     )}
                 </div>
             </section>
