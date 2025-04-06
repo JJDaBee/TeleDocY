@@ -7,8 +7,8 @@
 # postgres_consult: port 5435 DONE
 
 # book consult COMPOSITE port:5100
-# settle post consult COMPOSITE port: 5200
-# settle payment COMPOSITE port: 5300
+# settle post consult COMPOSITE port: 5200 DONE
+# settle payment COMPOSITE port: 5300 DONE
 # symptom checker COMPOSITE port: 4000 DONE
 
 # dyte wrapper: port 5000
@@ -20,7 +20,7 @@
 # schedule: port 5006 DONE
 # doctor: port 5007 DONE
 # consult: port 5008 DONE
-# payment: port 5009
+# payment: port 5009 DONE
 
 # minilm : port 4001 (hosted on localhost on vanness laptop via port 4001)
 # openai: port 4002 DONE

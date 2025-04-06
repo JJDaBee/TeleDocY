@@ -1,13 +1,31 @@
 from flask import Flask, request, jsonify
 import requests
+import pika
+import json
 
 app = Flask(__name__)
 
 # Configuration
 PAYMENT_SERVICE_URL = "http://payment:5009/payments"
 PATIENT_ADDRESS_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/GetPatientAddress"
+PATIENT_DETAIL_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/GetPatientByUUID"
 STRIPE_PAYMENT_URL = "http://stripe-wrapper:3001/create-checkout"
 DELIVERY_DETAIL_URL = "http://delivery_detail:5003/delivery_detail"
+
+def send_notification_via_amqp(email, message):
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+        channel = connection.channel()
+        channel.queue_declare(queue='notification_queue', durable=True)
+        channel.basic_publish(
+            exchange='',
+            routing_key='notification_queue',
+            body=json.dumps({"email": email, "message": message}),
+            properties=pika.BasicProperties(delivery_mode=2)
+        )
+        connection.close()
+    except Exception as e:
+        print(f"❌ Failed to publish delivery notification: {e}")
 
 @app.route("/settle_payment", methods=["POST"])
 def settle_payment():
@@ -32,9 +50,20 @@ def settle_payment():
             }), 502
 
         address_json = address_response.json()
-        patient_data = address_json.get("Patient", {})
-        patient_address = patient_data.get("Address", "Address not found")
-        patient_name = f"{patient_data.get('FirstName', '')} {patient_data.get('LastName', '')}".strip()
+        patient_address = address_json.get("Patient", {}).get("Address", "Address not found")
+
+        # ✅ Step 1b: Get patient name and email from UUID
+        detail_response = requests.post(PATIENT_DETAIL_URL, json={"uuid": uuid}, timeout=5)
+        if detail_response.status_code != 200:
+            return jsonify({
+                "code": 502,
+                "message": "Failed to retrieve patient details.",
+                "details": detail_response.text
+            }), 502
+
+        detail_data = detail_response.json().get("patient", {})
+        patient_name = f"{detail_data.get('FirstName', '')} {detail_data.get('LastName', '')}".strip()
+        patient_email = detail_data.get("Email", "test@example.com")
 
         # ✅ Step 2: Get payment details
         response = requests.get(f"{PAYMENT_SERVICE_URL}/{payment_id}", timeout=5)
@@ -67,8 +96,8 @@ def settle_payment():
 
         # ✅ Step 4: Create Delivery Record
         delivery_payload = {
-            "deliveryAddress": patient_address,  # from Step 1
-            "prescriptions": payment_data.get("prescriptions", []),  # from Step 2
+            "deliveryAddress": patient_address,
+            "prescriptions": payment_data.get("prescriptions", []),
             "uuid": uuid
         }
 
@@ -81,6 +110,18 @@ def settle_payment():
             }), 502
 
         delivery_data = delivery_response.json().get("data", {})
+
+        # ✅ Step 5: Notify patient via RabbitMQ
+        delivery_summary = (
+            f"Hi {patient_name},\n\n"
+            f"Your delivery has been scheduled successfully to the following address:\n"
+            f"{patient_address}\n\n"
+            f"Delivery Date: {delivery_data.get('deliveryDate', 'TBD')}\n"
+            f"Prescriptions:\n"
+            + "\n".join([f"- {p['medicineName']} (Qty: {p['quantity']})" for p in delivery_payload["prescriptions"]])
+        )
+
+        send_notification_via_amqp(patient_email, delivery_summary)
 
         # ✅ Final Response
         return jsonify({

@@ -133,7 +133,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-    background: '#f9f9f9',
+    background: '#007bff',
     padding: '20px',
     borderRadius: '10px',
     marginBottom: '25px',
