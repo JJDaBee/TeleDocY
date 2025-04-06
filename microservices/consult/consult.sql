@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS consults (
     firstname VARCHAR(100) NOT NULL,
     datetime TIMESTAMP NOT NULL,
     doctorname VARCHAR(100) NOT NULL,
-    roomid VARCHAR(20) NOT NULL,
+    roomid VARCHAR(50) NOT NULL,
     symptom TEXT NOT NULL,
     medicalhistory TEXT,
     PRIMARY KEY (firstname, datetime)
