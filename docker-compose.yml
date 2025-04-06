@@ -47,6 +47,7 @@ services:
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
             # - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
             - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
+            - ./microservices/consultDB/consultDB.sql:/docker-entrypoint-initdb.d/consultDB.sql
 
     consultationhistory:
         build:
@@ -145,6 +146,11 @@ services:
     #         - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
     #     networks:
     #         - app-network
+
+    consultDB:
+        build: 
+            context: ./microservices/consultDB 
+            dockerfile: consultDB.Dockerfile
 
 volumes:
     mysql_data:

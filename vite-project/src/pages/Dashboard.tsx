@@ -100,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     
             console.log('🔎 Payload being sent to backend:', payload);
     
-            const response = await fetch('http://host.docker.internal:5005/orders', {
+            const response = await fetch('http://host.docker.internal:5005/orders', {/*change to bookconsult composite service  */
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
