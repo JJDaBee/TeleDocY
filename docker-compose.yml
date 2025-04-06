@@ -2,17 +2,24 @@
 
 # frontend: port 5173
 # mysql: port 3307 DONE
-# postgres: port 5432
+# postgres_schedule: port 5433 DONE
+# postgres_doctor: port 5434 DONE
+
+# book consult COMPOSITE port:5100
+# settle post consult COMPOSITE port: 5200
+# symptom checker COMPOSITE port: 4000 DONE
+
 # dyte wrapper: port 5000
 # consultation_history: port 5001 DONE
 # medicine_inventory: port 5002 DONE
 # delivery_detail: port 5003 DONE
-# notification: port 5004
+# notification: port 5004 DONE
 # order: port 5005 DONE
-# schedule: port 5006
-# doctor: port 5007
-# minilm: port 4001
-# openai: port 4002
+# schedule: port 5006 DONE
+# doctor: port 5007 DONE
+
+# minilm : port 4001 (hosted on localhost on vanness laptop via port 4001)
+# openai: port 4002 DONE
 
 services:
     # gateway:
@@ -32,6 +39,17 @@ services:
     #     networks:
     #         - app-network
 
+    dyte-wrapper:
+        build:
+            context: ./wrapper/dyte
+            dockerfile: Dockerfile
+        ports:
+            - '5000:5000'
+        environment:
+            - PORT=5000
+        env_file:
+            - .env
+
     #FOR SQL
     mysql:
         image: mysql:8.0
@@ -45,9 +63,49 @@ services:
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            # - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
             - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
             - ./microservices/consultDB/consultDB.sql:/docker-entrypoint-initdb.d/consultDB.sql
+
+    postgres_schedule:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: schedule
+        ports:
+            - '5433:5432'
+        volumes:
+            - postgres_schedule_data:/var/lib/postgresql/data
+            - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
+
+    postgres_doctor:
+        image: postgres:17
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: doctor
+        ports:
+            - '5434:5432'
+        volumes:
+            - postgres_doctor_data:/var/lib/postgresql/data
+            - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+
+    bookconsult:
+        build:
+            context: ./microservices/book_consult
+            dockerfile: book_consult.Dockerfile
+        ports:
+            - '5100:5100'
+        depends_on:
+            - mysql
+            - postgres_schedule
+            - postgres_doctor
+            - consultationhistory
+            - doctor
+            - schedule
 
     consultationhistory:
         build:
@@ -82,16 +140,40 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/deliveryDetail
 
-    # notification:
-    #     build:
-    #         context: ./microservices/notification
-    #         dockerfile: notification.Dockerfile
-    #     depends_on:
-    #         - mysql
-    #     ports:
-    #         - '5004:5004'
-    #     environment:
-    #         - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+    notification:
+        build:
+            context: ./microservices/notification
+            dockerfile: Dockerfile
+        depends_on:
+            - mysql
+        ports:
+            - '5004:5004'
+        environment:
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/notification
+        env_file:
+            - .env
+
+    openai_service:
+        build:
+            context: ./microservices/openai_service
+            dockerfile: Dockerfile
+        ports:
+            - '4002:4002'
+        env_file:
+            - .env # this loads vanness' OPENAI_API_KEY from .env file
+
+    symptom_checker:
+        build:
+            context: ./microservices/symptom_checker
+            dockerfile: Dockerfile
+        depends_on:
+            - consultationhistory
+            - openai_service
+        ports:
+            - '4000:4000'
+        # environment:
+        #     - OPENAI_MICROSERVICE_URL=http://openai_service:4002/generate
+        #     - MINILM_TOKENIZER_URL=http://host.docker.internal:4001/tokenize
 
     order:
         build:
@@ -104,48 +186,27 @@ services:
         environment:
             - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
 
-    # postgres:
-    #     image: postgres:17
-    #     restart: always
-    #     environment:
-    #         POSTGRES_USER: postgres
-    #         POSTGRES_PASSWORD: postgres
-    #         POSTGRES_DB: schedule
-    #     ports:
-    #         - '5432:5432'
-    #     volumes:
-    #         - postgres_data:/var/lib/postgresql/data
-    #         - ./microservices/schedule/schedule.sql:/docker-entrypoint-initdb.d/schedule.sql
-    #         - ./microservices/doctor/doctor.sql:/docker-entrypoint-initdb.d/doctor.sql
+    schedule:
+        build:
+            context: ./microservices/schedule
+            dockerfile: schedule.Dockerfile
+        depends_on:
+            - postgres_schedule
+        ports:
+            - '5006:5006'
+        environment:
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_schedule:5432/schedule
 
-    #     networks:
-    #         - app-network
-
-    # schedule:
-    #     build:
-    #         context: ./microservices/schedule
-    #         dockerfile: schedule.Dockerfile
-    #     depends_on:
-    #         - postgres
-    #     ports:
-    #         - '5006:5000'
-    #     environment:
-    #         - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/schedule
-    #     networks:
-    #         - app-network
-
-    # doctor:
-    #     build:
-    #         context: ./microservices/doctor
-    #         dockerfile: doctor.Dockerfile
-    #     depends_on:
-    #         - postgres
-    #     ports:
-    #         - '5007:5000'
-    #     environment:
-    #         - DB_URI=postgresql+psycopg2://postgres:postgres@postgres:5432/doctor
-    #     networks:
-    #         - app-network
+    doctor:
+        build:
+            context: ./microservices/doctor
+            dockerfile: doctor.Dockerfile
+        depends_on:
+            - postgres_doctor
+        ports:
+            - '5007:5007'
+        environment:
+            - DB_URI=postgresql+psycopg2://postgres:postgres@postgres_doctor:5432/doctor
 
     consultDB:
         build: 
@@ -154,7 +215,8 @@ services:
 
 volumes:
     mysql_data:
-    postgres_data:
+    postgres_schedule_data:
+    postgres_doctor_data:
 
 networks:
     app-network:

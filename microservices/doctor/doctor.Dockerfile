@@ -13,7 +13,7 @@ COPY doctor.py /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5500
+EXPOSE 5007
 
 # Start Flask app
 CMD ["python", "doctor.py"]

@@ -3,7 +3,6 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -11,25 +10,23 @@ app.use(express.json());
 
 const DYTE_API_KEY = process.env.DYTE_API_KEY;
 const DYTE_BASE_URL = 'https://api.dyte.io/v2';
-const DYTE_MEETING_ID = process.env.DYTE_MEETING_ID;
-const patientUuid = 'UUID-1234';
+const patientUuid = 'UUID-1234'; // Optional: this can be dynamic if needed
 
 app.post('/create-token', async (req, res) => {
     try {
-        const { participantName } = req.body;
+        const { participantName, meetingId } = req.body;
 
-        if (!DYTE_MEETING_ID || !participantName) {
+        if (!participantName || !meetingId) {
             return res
                 .status(400)
                 .json({ error: 'meetingId and participantName are required' });
         }
 
-        // Add participant to existing meeting
         const participantResponse = await axios.post(
-            `${DYTE_BASE_URL}/meetings/${DYTE_MEETING_ID}/participants`,
+            `${DYTE_BASE_URL}/meetings/${meetingId}/participants`,
             {
                 name: participantName,
-                preset_name: 'Test v1', // Or your custom preset
+                preset_name: 'Test v1',
                 client_specific_id: patientUuid,
             },
             {
@@ -41,9 +38,6 @@ app.post('/create-token', async (req, res) => {
         );
 
         const authToken = participantResponse.data.data.token;
-        // console.log('Participant added:', participantResponse);
-        // console.log('Auth Token:', authToken);
-
         res.json({ authToken });
     } catch (error) {
         console.error(
@@ -56,5 +50,5 @@ app.post('/create-token', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
-    console.log(`🚀 Backend running on http://localhost:${PORT}`)
+    console.log(`🚀 Dyte wrapper running on http://localhost:${PORT}`)
 );

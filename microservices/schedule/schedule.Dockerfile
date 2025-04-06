@@ -13,7 +13,7 @@ COPY schedule.py /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask port
-EXPOSE 5400
+EXPOSE 5006
 
 # Start Flask app
 CMD ["python", "schedule.py"]
