@@ -43,6 +43,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         patientID: '',
         nric: '',
         date: '',
+        diagnosis: '', // ✅ Added
+
     });
 
     const [medications, setMedications] = useState<MedicationRow[]>([
@@ -88,39 +90,52 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
         console.log('📤 Submitting to Order Service:', prescription);
     
-        try {
-            const payload = {
-                uuid: form.patientID,
-                medicines: medications.map(m => ({
-                    medication: m.medication,
-                    dosage: m.dosage,
-                    numberOfPills: m.quantity,
-                }))
-            };
-    
-            console.log('🔎 Payload being sent to backend:', payload);
-    
-            const response = await fetch('http://host.docker.internal:5005/orders', {/*change to bookconsult composite service  */
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-    
-            if (!response.ok) {
-                const err = await response.json();
-                console.error('❌ Order service error:', err);
-                alert('Failed to submit prescription.');
-            } else {
-                const result = await response.json();
-                console.log('✅ Order placed successfully:', result);
-                alert('Order submitted to order service.');
-                closePopup();
-            }
-        } catch (error) {
-            console.error('❌ Error submitting order:', error);
-            alert('Error contacting order service.');
-        }
+      try {
+    // --- 1. POST to Order Service ---
+    const orderPayload = {
+      uuid: form.patientID,
+      medicines: medications.map(m => ({
+        medication: m.medication,
+        dosage: m.dosage,
+        numberOfPills: m.quantity,
+      }))
     };
+
+    const orderResponse = await fetch('http://host.docker.internal:5005/orders', { /*change next time */
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload),
+    });
+
+    // --- 2. POST to Consult History ---
+    const historyPayload = {
+      uuid: form.patientID,
+      nric: form.nric,
+      dateTime: new Date().toISOString(), // or use form.date + time
+      reasonForVisit: selectedPatient || 'General Consultation',
+      doctorName: doctorName, // from context/props
+      diagnosis: form.diagnosis,
+      prescriptions: medications.map(m => `${m.medication} ${m.dosage} x${m.quantity}`).join(', ')
+    };
+
+    const historyResponse = await fetch('http://host.docker.internal:5600/consultation-history', { /*change next time*/
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(historyPayload),
+    });
+
+    // ✅ All went well
+    if (orderResponse.ok && historyResponse.ok) {
+      alert('✅ Order & History submitted successfully!');
+      closePopup();
+    } else {
+      alert('⚠️ Something went wrong submitting one of the services.');
+    }
+  } catch (err) {
+    console.error('❌ Error submitting:', err);
+    alert('Error submitting data to backend.');
+  }
+};
     
         return (
             <>
@@ -207,6 +222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                                 <input name="patientID" placeholder="Patient ID" onChange={handleFormChange} value={form.patientID} style={inputStyle} />
                                 <input name="nric" placeholder="NRIC" onChange={handleFormChange} value={form.nric} style={inputStyle} />
                                 <input name="date" type="date" onChange={handleFormChange} value={form.date} style={inputStyle} />
+                                <input name="diagnosis" type="string" onChange={handleFormChange} value={form.diagnosis} style={inputStyle}} />
 
                                 <hr style={{ margin: '20px 0' }} />
 
