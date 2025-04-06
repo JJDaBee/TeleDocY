@@ -1,8 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
+    const navigate = useNavigate();
+
+    const storedUser = sessionStorage.getItem('loggedInUser');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('loggedInUser');
+        navigate('/login');
+    };
+
     return (
         <nav
             style={{
@@ -22,11 +31,49 @@ const Navbar: React.FC = () => {
             </h2>
 
             <div style={{ display: 'flex', gap: '20px' }}>
-                <Link to="/" style={linkStyle}>Home</Link>
-                <Link to="/consultation" style={linkStyle}>Consultation</Link>
-                <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
-                <Link to="/symptom-checker" style={linkStyle}>Symptom Checker</Link>
-                <Link to="/login" style={linkStyle}>Login</Link>
+                <Link to="/" style={linkStyle}>
+                    Home
+                </Link>
+                <Link to="/symptom-checker" style={linkStyle}>
+                    Symptom Checker
+                </Link>
+
+                {user?.role === 'doctor' && (
+                    <>
+                        <Link to="/dashboard" style={linkStyle}>
+                            Dashboard
+                        </Link>
+                        <span
+                            onClick={handleLogout}
+                            style={{ ...linkStyle, cursor: 'pointer' }}
+                        >
+                            Logout
+                        </span>
+                    </>
+                )}
+
+                {user?.role === 'patient' && (
+                    <>
+                        <Link to="/consultation" style={linkStyle}>
+                            Consultation
+                        </Link>
+                        <Link to="/payment" style={linkStyle}>
+                            Payment
+                        </Link>
+                        <span
+                            onClick={handleLogout}
+                            style={{ ...linkStyle, cursor: 'pointer' }}
+                        >
+                            Logout
+                        </span>
+                    </>
+                )}
+
+                {!user && (
+                    <Link to="/login" style={linkStyle}>
+                        Login
+                    </Link>
+                )}
             </div>
         </nav>
     );
@@ -40,5 +87,3 @@ const linkStyle: React.CSSProperties = {
 };
 
 export default Navbar;
-
-

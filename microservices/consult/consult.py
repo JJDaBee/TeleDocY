@@ -25,9 +25,11 @@ class Consult(db.Model):
     roomid = db.Column(db.String(20), nullable=False)
     symptom = db.Column(db.Text, nullable=False)
     medicalhistory = db.Column(db.Text, nullable=True)  # Matches SQL column
+    uuid = db.Column(db.String(36), nullable=False, unique=True)
 
     def to_dict(self):
         return {
+            'uuid': self.uuid,
             "firstname": self.firstname,
             "datetime": self.datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "doctorname": self.doctorname,
@@ -49,6 +51,7 @@ def create_consult():
     data = request.get_json()
     try:
         record = Consult(
+            uuid=data["uuid"],
             firstname=data["firstname"],
             datetime=datetime.strptime(data["datetime"], "%Y-%m-%d %H:%M:%S"),
             doctorname=data["doctorname"],

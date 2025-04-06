@@ -22,7 +22,7 @@ function MeetingPage() {
     useEffect(() => {
         const handleUnload = () => {
             if (window.opener && !window.opener.closed) {
-                window.opener.location.href = '/home';
+                window.opener.location.href = '/';
             }
         };
 
@@ -30,7 +30,11 @@ function MeetingPage() {
         return () => window.removeEventListener('beforeunload', handleUnload);
     }, []);
 
-    return meeting ? <DyteMeeting meeting={meeting} /> : <p>Loading meeting...</p>;
+    return meeting ? (
+        <DyteMeeting meeting={meeting} />
+    ) : (
+        <p>Loading meeting...</p>
+    );
 }
 
 export default MeetingPage;

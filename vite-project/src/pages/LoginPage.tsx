@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 
-
 type User = {
     username: string;
     password: string;
     role: 'patient' | 'doctor';
+    uuid?: string; // Optional property
+    doctorName?: string; // Optional property
 };
 
 type LoginPageProps = {
@@ -16,14 +17,18 @@ type LoginPageProps = {
 };
 
 const accounts: User[] = [
-    { username: 'p1', password: '111', role: 'patient' },
-    { username: 'd1', password: '111', role: 'doctor' },
+    { username: 'p1', password: '111', role: 'patient', uuid: 'uuid-1234' },
     {
-        username: "Goh Zhi Hao",
-        password: "111",
-        role: "doctor"
-      },
-      
+        username: 'd1',
+        password: '111',
+        role: 'doctor',
+        doctorName: 'Lee Kai Sheng',
+    },
+    {
+        username: 'Goh Zhi Hao',
+        password: '111',
+        role: 'doctor',
+    },
 ];
 
 const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
@@ -38,7 +43,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
         );
 
         if (user) {
-            setUser(user);
+            // Save user info in sessionStorage
+            sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+
+            setUser(user); // Lift state if needed
             navigate(user.role === 'doctor' ? '/dashboard' : '/');
         } else {
             setError('Invalid credentials');
@@ -51,13 +59,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
             <div
                 style={{
                     minHeight: '100vh',
-                    width:'100vw',
+                    width: '100vw',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'linear-gradient(to right, #f9f9f9, #e8f0ff)',
                     padding: '40px 0px',
-                    margin: '0 auto'
+                    margin: '0 auto',
                 }}
             >
                 <div
@@ -71,9 +79,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
                         textAlign: 'center',
                     }}
                 >
-                    <h2 style={{ marginBottom: '24px' , margin:'0 auto', color: '#007BFF' }}>Login to <span style={{ color: '#007BFF' }}>TeleDoc</span></h2>
+                    <h2
+                        style={{
+                            marginBottom: '24px',
+                            margin: '0 auto',
+                            color: '#007BFF',
+                        }}
+                    >
+                        Login to{' '}
+                        <span style={{ color: '#007BFF' }}>TeleDoc</span>
+                    </h2>
 
-                    {error && <p style={{ color: 'red', marginBottom: '16px' }}>{error}</p>}
+                    {error && (
+                        <p style={{ color: 'red', marginBottom: '16px' }}>
+                            {error}
+                        </p>
+                    )}
 
                     <input
                         type="text"
@@ -102,7 +123,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
                             border: 'none',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            margin: '10 auto'
+                            margin: '10 auto',
                         }}
                     >
                         Login
@@ -111,8 +132,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
                     <div style={{ marginTop: '30px', textAlign: 'left' }}>
                         <h4>Test Accounts</h4>
                         <ul style={{ paddingLeft: '20px', color: '#555' }}>
-                            <li>👤 Patient: <strong>p1 / 111</strong></li>
-                            <li>🩺 Doctor: <strong>d1 / 111</strong></li>
+                            <li>
+                                👤 Patient: <strong>p1 / 111</strong>
+                            </li>
+                            <li>
+                                🩺 Doctor: <strong>d1 / 111</strong>
+                            </li>
                         </ul>
                     </div>
                 </div>

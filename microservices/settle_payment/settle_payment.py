@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import requests
 import pika
 import json
+from flask_cors import CORS 
 
 app = Flask(__name__)
+CORS(app)
 
 # Configuration
 PAYMENT_SERVICE_URL = "http://payment:5009/payments"

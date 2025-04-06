@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS consults;
 
 CREATE TABLE IF NOT EXISTS consults (
     firstname VARCHAR(100) NOT NULL,
+    uuid VARCHAR(50) NOT NULL,
     datetime TIMESTAMP NOT NULL,
     doctorname VARCHAR(100) NOT NULL,
     roomid VARCHAR(50) NOT NULL,
