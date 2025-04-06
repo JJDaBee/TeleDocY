@@ -7,8 +7,10 @@ import SymptomChecker from './pages/SymptomChecker';
 import MeetingPage from './pages/MeetingPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import Loader from './pages/Loader';
 import Navbar from './components/navbar';
 import Footer from './components/footer';
+import { useEffect } from 'react';
 
 
 type User = {
@@ -19,7 +21,17 @@ type User = {
 
 function App() {
     const [user, setUser] = useState<User | null>(null);
-
+        useEffect(() => { //TO REDIRECT BACK TO HOME AFTER CALL
+            const handleMessage = (event: MessageEvent) => {
+                if (event.data?.type === 'MEETING_ENDED') {
+                    console.log('📞 Meeting ended — redirecting to dashboard');
+                    window.location.href = '/home'; 
+                }
+            };
+    
+            window.addEventListener('message', handleMessage);
+            return () => window.removeEventListener('message', handleMessage);
+        }, []);
     return (
         <Router>
           
@@ -33,6 +45,7 @@ function App() {
                     element={<LoginPage setUser={setUser} />}
                 />
                 <Route path="/dashboard" element={<Dashboard user={user} />} />
+                <Route path="/loader" element={<Loader />} />
             </Routes>
         </Router>
     );

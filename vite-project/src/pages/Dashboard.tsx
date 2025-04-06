@@ -20,7 +20,7 @@ type MedicationRow = {
     quantity: number;
 };
 
-const doctorName = 'Ng Xuan Yi';
+const doctorName = 'Lee Kai Sheng'; //TO BE DYNAMIC
 
 const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const navigate = useNavigate();
