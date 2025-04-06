@@ -53,7 +53,9 @@ def book_consult():
         doctor_profile = doctor_response.json().get("data", {})
 
         # Step 5: Dyte wrapper
-        participant_name = patient_data.get("name", "Patient")
+        participant_name = patient_data.get("patient", {}).get("FirstName", "Patient")
+        print(f"👤 Participant name: {participant_name}", flush=True)
+
         dyte_response = requests.post(DYTE_WRAPPER_URL, json={
             "participantName": participant_name,
             "meetingId": meeting_id
@@ -66,6 +68,7 @@ def book_consult():
 
         # Step 6: Post to consult microservice
         consult_payload = {
+            "uuid": uuid,
             "firstname": participant_name,
             "datetime": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "doctorname": doctor_name,
@@ -75,6 +78,7 @@ def book_consult():
         }
 
         consult_response = requests.post(CONSULT_POST_URL, json=consult_payload, timeout=5)
+        consult_data = consult_response.json()
         if consult_response.status_code != 201:
             return jsonify({"code": 502, "message": "Failed to post consultation record.", "details": consult_response.text}), 502
 

@@ -3,8 +3,10 @@ import requests
 from datetime import datetime
 import pika
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 ORDER_URL = "http://order:5005/orders"
 CONSULT_HISTORY_URL = "http://consultationhistory:5001/consultation_history"

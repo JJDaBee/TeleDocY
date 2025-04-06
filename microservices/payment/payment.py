@@ -116,6 +116,28 @@ def get_payment_by_id(payment_id):
             "message": "An error occurred while fetching the payment.",
             "error": str(e)
         }), 500
+    
+@app.route("/payments/uuid/<string:uuid>", methods=["GET"])
+def get_payments_by_uuid(uuid):
+    try:
+        payments = Payment.query.filter_by(uuid=uuid).all()
+        if not payments:
+            return jsonify({
+                "code": 404,
+                "message": f"No payments found for UUID {uuid}"
+            }), 404
+
+        return jsonify({
+            "code": 200,
+            "data": [payment.to_dict() for payment in payments]
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching payments by UUID.",
+            "error": str(e)
+        }), 500
 
 
 # --- Start App ---
