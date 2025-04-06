@@ -40,7 +40,7 @@ const Consultation: React.FC = () => {
                 gender: profile.gender || 'N/A',
                 picture: profile.picture || '/default.png',
             });
-
+            console.log(profile.picture);
             sessionStorage.setItem('authToken', token);
             sessionStorage.setItem('doctorName', doc.doctorName || 'Doctor');
 
@@ -70,15 +70,20 @@ const Consultation: React.FC = () => {
                         width: '100vw',
                     }}
                 >
-                    <img
-                        src={doctor.picture}
-                        alt="Doctor"
-                        style={{
-                            width: '120px',
-                            borderRadius: '50%',
-                            marginBottom: '20px',
-                        }}
-                    />
+                    {doctor.picture && (
+                        <img
+                            src={`/doctor_pics/${doctor.picture}`}
+                            onError={(e) =>
+                                (e.currentTarget.src = '/default.png')
+                            }
+                            alt="Doctor"
+                            style={{
+                                width: '120px',
+                                borderRadius: '50%',
+                                marginBottom: '20px',
+                            }}
+                        />
+                    )}
                     <h2>Connecting you to Dr. {doctor.name}</h2>
                     <p style={{ marginBottom: '30px', color: '#666' }}>
                         Gender: {doctor.gender}
