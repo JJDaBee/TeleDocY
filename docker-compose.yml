@@ -63,8 +63,14 @@ services:
             - ./microservices/consultation_history/consultation_history.sql:/docker-entrypoint-initdb.d/consultation_history.sql
             - ./microservices/medicine_inventory/medicine_inventory.sql:/docker-entrypoint-initdb.d/medicine_inventory.sql
             - ./microservices/delivery_detail/delivery_detail.sql:/docker-entrypoint-initdb.d/delivery_detail.sql
-            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
             - ./microservices/order/order.sql:/docker-entrypoint-initdb.d/order.sql
+            - ./microservices/notification/notification.sql:/docker-entrypoint-initdb.d/notification.sql
+
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
     postgres_schedule:
         image: postgres:17
@@ -144,7 +150,8 @@ services:
             context: ./microservices/notification
             dockerfile: Dockerfile
         depends_on:
-            - mysql
+            mysql:
+                condition: service_healthy
         ports:
             - '5004:5004'
         environment:
@@ -183,7 +190,7 @@ services:
         ports:
             - '5005:5005'
         environment:
-            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/order
+            - DB_URI=mysql+mysqlconnector://root:root@mysql:3306/orderdb
 
     schedule:
         build:
