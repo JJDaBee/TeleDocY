@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 import requests
 from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 PATIENT_API_URL = "https://personal-gbst4bsa.outsystemscloud.com/PatientAPI/rest/patientAPI/GetPatientByUUID"
 CONSULT_HISTORY_URL_BASE = "http://consultationhistory:5001/consultation_history"

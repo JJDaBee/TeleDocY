@@ -18,7 +18,19 @@ function MeetingPage() {
         initMeeting({ authToken });
     }, []);
 
-    return <DyteMeeting meeting={meeting!} />;
+    // ✅ Redirect parent tab to /home if this tab closes
+    useEffect(() => {
+        const handleUnload = () => {
+            if (window.opener && !window.opener.closed) {
+                window.opener.location.href = '/home';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleUnload);
+        return () => window.removeEventListener('beforeunload', handleUnload);
+    }, []);
+
+    return meeting ? <DyteMeeting meeting={meeting} /> : <p>Loading meeting...</p>;
 }
 
 export default MeetingPage;
