@@ -24,7 +24,7 @@ const Home: React.FC = () => {
 >
 
                 <h1 style={{ fontSize: '3rem', marginBottom: '20px', color: '#333' }}>
-                    Welcome to <span style={{ color: '#007BFF' }}>TeleDoc</span>
+                    Welcome to <span style={{ color: '#007BFF' }}>TeleDocY</span>
                 </h1>
                 <p style={{ fontSize: '1.25rem', maxWidth: '600px', color: '#555' }}>
                     Get trusted medical help from certified doctors — anytime, anywhere.

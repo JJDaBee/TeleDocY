@@ -87,7 +87,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setUser }) => {
                         }}
                     >
                         Login to{' '}
-                        <span style={{ color: '#007BFF' }}>TeleDoc</span>
+                        <span style={{ color: '#007BFF' }}>TeleDocY</span>
                     </h2>
 
                     {error && (

@@ -142,7 +142,7 @@ const SymptomChecker = () => {
                                 <p>{result.ai_response}</p>
                             </div>
 
-                            <div style={cardStyle}>
+                            {/* <div style={cardStyle}>
                                 <h4 style={cardTitle}>Patient Info</h4>
                                 <pre
                                     style={{
@@ -156,7 +156,7 @@ const SymptomChecker = () => {
                                         2
                                     )}
                                 </pre>
-                            </div>
+                            </div> */}
                         </div>
                     )}
                 </div>
