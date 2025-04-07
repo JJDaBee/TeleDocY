@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
         >
             <h2 style={{ margin: 0 }}>
                 <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-                    TeleDoc
+                    TeleDocY
                 </Link>
             </h2>
 
