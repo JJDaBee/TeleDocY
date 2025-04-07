@@ -10,7 +10,7 @@ This guide walks you through setting up the `minilm_tokenizer` microservice and 
 1. Copy `minilm_tokenizer.py` into your project directory (same folder as this README).
 2. Install the required dependencies:
    ```bash
-   pip install fastapi uvicorn pydantic python-dotenv requests sentence-transformers
+   pip install fastapi uvicorn pydantic python-dotenv requests sentence-transformers tf-keras transformers==4.41.2
    ```
 3. Start the microservice:
    ```bash
